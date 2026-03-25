@@ -1,0 +1,9 @@
+.domain-card {
+	border-top: 4px solid #c03;
+}
+
+.domain-highlight {
+	color: var(--text-h);
+	font-weight: 600;
+	margin-top: 12px;
+}

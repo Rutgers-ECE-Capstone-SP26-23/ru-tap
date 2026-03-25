@@ -1,0 +1,83 @@
+.floating-to-top {
+	align-items: center;
+	background: radial-gradient(
+		circle at center,
+		rgba(120, 128, 140, 0.36) 0%,
+		rgba(120, 128, 140, 0.28) 48%,
+		rgba(120, 128, 140, 0.2) 100%
+	);
+	border: none;
+	border-radius: 999px;
+	bottom: 20px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+	color: white;
+	cursor: pointer;
+	display: inline-grid;
+	height: 48px;
+	justify-items: center;
+	padding: 0;
+	place-items: center;
+	position: fixed;
+	right: 20px;
+	transition:
+		transform 0.2s ease,
+		background 0.2s ease,
+		border-color 0.2s ease;
+	width: 48px;
+	z-index: 20;
+}
+
+.floating-to-top:hover {
+	background: radial-gradient(
+		circle at center,
+		rgba(97, 105, 120, 0.42) 0%,
+		rgba(97, 105, 120, 0.33) 50%,
+		rgba(97, 105, 120, 0.24) 100%
+	);
+	transform: translateY(-2px);
+}
+
+.floating-to-top .arrow-icon {
+	background-color: currentcolor;
+	display: block;
+	height: 20px;
+	-webkit-mask-image: var(--up-arrow-mask-url);
+	mask-image: var(--up-arrow-mask-url);
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	transform: translateY(-0.5px);
+	width: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+	.floating-to-top {
+		background: radial-gradient(
+			circle at center,
+			rgba(148, 158, 176, 0.3) 0%,
+			rgba(148, 158, 176, 0.24) 50%,
+			rgba(148, 158, 176, 0.18) 100%
+		);
+	}
+
+	.floating-to-top:hover {
+		background: radial-gradient(
+			circle at center,
+			rgba(148, 158, 176, 0.38) 0%,
+			rgba(148, 158, 176, 0.3) 50%,
+			rgba(148, 158, 176, 0.22) 100%
+		);
+	}
+}
+
+@media (max-width: 980px) {
+	.floating-to-top {
+		bottom: 14px;
+		height: 44px;
+		right: 14px;
+		width: 44px;
+	}
+}

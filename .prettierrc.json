@@ -1,0 +1,29 @@
+{
+	"arrowParens": "avoid",
+	"bracketSameLine": true,
+	"bracketSpacing": true,
+	"embeddedLanguageFormatting": "auto",
+	"endOfLine": "auto",
+	"htmlWhitespaceSensitivity": "css",
+	"jsxSingleQuote": false,
+	"printWidth": 120,
+	"proseWrap": "always",
+	"quoteProps": "consistent",
+	"semi": true,
+	"singleAttributePerLine": false,
+	"singleQuote": false,
+	"plugins": [
+		"@prettier/plugin-xml"
+	],
+	"tabWidth": 4,
+	"trailingComma": "none",
+	"useTabs": true,
+	"overrides": [
+		{
+			"files": "*.svg",
+			"options": {
+				"parser": "xml"
+			}
+		}
+	]
+}

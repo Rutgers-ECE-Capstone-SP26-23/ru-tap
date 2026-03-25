@@ -1,0 +1,26 @@
+{
+	"$schema": "https://www.schemastore.org/web-manifest.json",
+	"name": "RU Tap",
+	"short_name": "RU Tap",
+	"description": "RU Tap is a Rutgers workflow app unifying academics, transit, maps, and careers in one interface.",
+	"categories": [
+		"education",
+		"productivity",
+		"navigation"
+	],
+	"lang": "en-US",
+	"id": ".",
+	"scope": ".",
+	"start_url": ".",
+	"display": "standalone",
+	"background_color": "white",
+	"theme_color": "#c03",
+	"icons": [
+		{
+			"src": "favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		}
+	]
+}
