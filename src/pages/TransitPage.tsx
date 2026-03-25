@@ -1,12 +1,18 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-	SELECTED_TRANSIT_REFRESH_INTERVAL_MS,
-	TRANSIT_REFRESH_INTERVAL_MS,
 	fetchTransitSnapshot,
-	mergeTransitSnapshots
+	mergeTransitSnapshots,
+	SELECTED_TRANSIT_REFRESH_INTERVAL_MS,
+	TRANSIT_REFRESH_INTERVAL_MS
 } from "@/data/transit.ts";
-import type { TransitBus, TransitRoute, TransitSnapshot } from "@/types/transit.ts";
+import type {
+	TransitBusCardProps,
+	TransitMetricCardProps,
+	TransitRouteButtonProps,
+	TransitRoute,
+	TransitSnapshot
+} from "@/types/transit.ts";
 import { withBasePath } from "@/utils/basePath.ts";
 import "@/styles/transitPage.css";
 
@@ -21,14 +27,14 @@ function formatShortTime(value: string | number) {
 
 function formatEta(etaMs: number) {
 	const minutesUntilArrival = Math.max(0, Math.round((etaMs - Date.now()) / 60_000));
-
-	return minutesUntilArrival <= 0 ? "Due" : minutesUntilArrival === 1 ? "1 min" : `${minutesUntilArrival} min`;
+	if (minutesUntilArrival <= 0) return "Due";
+	if (minutesUntilArrival === 1) return "1 min";
+	return `${minutesUntilArrival} min`;
 }
 
 function formatHeading(heading: number) {
 	const compassDirections = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 	const directionIndex = Math.round((((heading % 360) + 360) % 360) / 45) % compassDirections.length;
-
 	return `${compassDirections[directionIndex]} · ${Math.round(heading)}°`;
 }
 
@@ -50,10 +56,47 @@ function getRouteBadgeStyle(route: TransitRoute): CSSProperties {
 	};
 }
 
-type TransitMetricCardProps = Readonly<{
-	label: string;
-	value: string | number;
-}>;
+function resolveSelectedRouteId(currentRouteId: string | null, routes: readonly TransitRoute[]) {
+	return currentRouteId && routes.some(route => route.id === currentRouteId)
+		? currentRouteId
+		: (routes[0]?.id ?? null);
+}
+
+function getRouteOptions(snapshot: TransitSnapshot | null, selectedRoute: TransitRoute | null) {
+	const activeRoutes = snapshot?.activeRoutes ?? [];
+	if (!selectedRoute) return activeRoutes;
+	if (!activeRoutes.some(route => route.id === selectedRoute.id)) return [selectedRoute, ...activeRoutes];
+	return activeRoutes;
+}
+
+function getTransitErrorMessage(caughtError: unknown) {
+	return caughtError instanceof Error ? caughtError.message : "Couldn't load Rutgers transit data.";
+}
+
+function getBoardRefreshSnapshot(
+	currentSnapshot: TransitSnapshot | null,
+	nextSnapshot: TransitSnapshot,
+	selectedRouteId: string | null
+) {
+	if (!currentSnapshot) return nextSnapshot;
+	const routeIdsToUpdate = new Set<string>();
+	for (const route of nextSnapshot.routes) if (route.id !== selectedRouteId) routeIdsToUpdate.add(route.id);
+	return mergeTransitSnapshots(currentSnapshot, nextSnapshot, routeIdsToUpdate, {
+		updatedAt: nextSnapshot.updatedAt,
+		alerts: nextSnapshot.alerts,
+		systemStatus: nextSnapshot.systemStatus
+	});
+}
+
+function getSelectedRouteRefreshSnapshot(
+	currentSnapshot: TransitSnapshot | null,
+	nextSnapshot: TransitSnapshot,
+	selectedRouteId: string
+) {
+	return currentSnapshot
+		? mergeTransitSnapshots(currentSnapshot, nextSnapshot, new Set([selectedRouteId]))
+		: nextSnapshot;
+}
 
 function TransitMetricCard({ label, value }: TransitMetricCardProps) {
 	return (
@@ -64,15 +107,8 @@ function TransitMetricCard({ label, value }: TransitMetricCardProps) {
 	);
 }
 
-type TransitRouteButtonProps = Readonly<{
-	route: TransitRoute;
-	isSelected: boolean;
-	onSelect: (routeId: string) => void;
-}>;
-
 function TransitRouteButton({ route, isSelected, onSelect }: TransitRouteButtonProps) {
 	const liveLabel = route.buses.length > 0 ? `${route.buses.length} live` : "Quiet now";
-
 	return (
 		<button
 			type="button"
@@ -90,10 +126,6 @@ function TransitRouteButton({ route, isSelected, onSelect }: TransitRouteButtonP
 	);
 }
 
-type TransitBusCardProps = Readonly<{
-	bus: TransitBus;
-}>;
-
 function TransitBusCard({ bus }: TransitBusCardProps) {
 	return (
 		<article className="transit-bus-card">
@@ -106,14 +138,12 @@ function TransitBusCard({ bus }: TransitBusCardProps) {
 					{bus.realTime ? "Live" : "Scheduled"}
 				</p>
 			</div>
-
 			<div className="transit-bus-meta">
 				<p>Heading {formatHeading(bus.heading)}</p>
 				<p>
 					{bus.nextStops.length} upcoming stop{bus.nextStops.length === 1 ? "" : "s"}
 				</p>
 			</div>
-
 			{bus.nextStops.length > 0 ? (
 				<ol className="transit-stop-list">
 					{bus.nextStops.map((stop, stopIndex) => (
@@ -140,182 +170,128 @@ export default function TransitPage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const snapshotRef = useRef<TransitSnapshot | null>(null);
 	const hasLoadedSnapshotRef = useRef(false);
 	const hasStartedBoardClockRef = useRef(false);
 	const selectedRouteIdRef = useRef<string | null>(null);
 	const boardRefreshVersionRef = useRef(0);
 	const selectedRefreshVersionRef = useRef(0);
 	const [boardClockAnchorMs, setBoardClockAnchorMs] = useState<number | null>(null);
-
 	selectedRouteIdRef.current = selectedRouteId;
-
+	const commitSnapshot = (nextSnapshot: TransitSnapshot) => {
+		snapshotRef.current = nextSnapshot;
+		setSnapshot(nextSnapshot);
+	};
+	const syncSelectedRouteId = (routes: readonly TransitRoute[]) => {
+		const nextSelectedRouteId = resolveSelectedRouteId(selectedRouteIdRef.current, routes);
+		selectedRouteIdRef.current = nextSelectedRouteId;
+		setSelectedRouteId(nextSelectedRouteId);
+	};
 	useEffect(() => {
 		let isDisposed = false;
 		const abortController = new AbortController();
-
 		const loadSnapshot = async () => {
 			try {
 				const nextSnapshot = await fetchTransitSnapshot(abortController.signal);
-
-				if (isDisposed) {
-					return;
-				}
-
+				if (isDisposed) return;
 				hasLoadedSnapshotRef.current = true;
-				setSnapshot(nextSnapshot);
+				commitSnapshot(nextSnapshot);
 				setError(null);
-				setSelectedRouteId(currentRouteId =>
-					currentRouteId && nextSnapshot.routes.some(route => route.id === currentRouteId)
-						? currentRouteId
-						: (nextSnapshot.routes[0]?.id ?? null)
-				);
+				syncSelectedRouteId(nextSnapshot.routes);
 				if (!hasStartedBoardClockRef.current) {
 					hasStartedBoardClockRef.current = true;
 					setBoardClockAnchorMs(Date.now());
 				}
 			} catch (caughtError) {
-				if (isDisposed || abortController.signal.aborted) {
-					return;
-				}
-
-				setError(caughtError instanceof Error ? caughtError.message : "Couldn't load Rutgers transit data.");
+				if (isDisposed || abortController.signal.aborted) return;
+				setError(getTransitErrorMessage(caughtError));
 			} finally {
-				if (!isDisposed) {
-					setIsLoading(false);
-				}
+				if (!isDisposed) setIsLoading(false);
 			}
 		};
-
 		void loadSnapshot();
-
 		return () => {
 			isDisposed = true;
 			abortController.abort();
 		};
 	}, []);
-
 	useEffect(() => {
-		if (boardClockAnchorMs === null) {
-			return;
-		}
-
-		const refreshTimer = globalThis.setInterval(() => {
+		if (boardClockAnchorMs === null) return;
+		const refreshBoardSnapshot = async () => {
 			const requestVersion = boardRefreshVersionRef.current + 1;
 			boardRefreshVersionRef.current = requestVersion;
-
-			void fetchTransitSnapshot()
-				.then(nextSnapshot => {
-					if (boardRefreshVersionRef.current !== requestVersion) {
-						return;
-					}
-
-					setSnapshot(currentSnapshot => {
-						if (!currentSnapshot) {
-							return nextSnapshot;
-						}
-
-						const activeSelectedRouteId = selectedRouteIdRef.current;
-						const routeIdsToUpdate = new Set(
-							nextSnapshot.routes
-								.filter(route => route.id !== activeSelectedRouteId)
-								.map(route => route.id)
-						);
-
-						return mergeTransitSnapshots(currentSnapshot, nextSnapshot, routeIdsToUpdate, {
-							updatedAt: nextSnapshot.updatedAt,
-							alerts: nextSnapshot.alerts,
-							systemStatus: nextSnapshot.systemStatus
-						});
-					});
-					setError(null);
-				})
-				.catch(caughtError => {
-					setError(caughtError instanceof Error ? caughtError.message : "Couldn't load Rutgers transit data.");
-				});
-		}, TRANSIT_REFRESH_INTERVAL_MS);
-
-		return () => {
-			globalThis.clearInterval(refreshTimer);
+			try {
+				const nextSnapshot = await fetchTransitSnapshot();
+				if (boardRefreshVersionRef.current !== requestVersion) return;
+				const mergedSnapshot = getBoardRefreshSnapshot(
+					snapshotRef.current,
+					nextSnapshot,
+					selectedRouteIdRef.current
+				);
+				commitSnapshot(mergedSnapshot);
+				setError(null);
+			} catch (caughtError) {
+				setError(getTransitErrorMessage(caughtError));
+			}
 		};
+		const refreshTimer = globalThis.setInterval(() => void refreshBoardSnapshot(), TRANSIT_REFRESH_INTERVAL_MS);
+		return () => globalThis.clearInterval(refreshTimer);
 	}, [boardClockAnchorMs]);
-
 	useEffect(() => {
 		if (boardClockAnchorMs === null || !selectedRouteId) {
 			return;
 		}
-
-		const refreshTimer = globalThis.setInterval(() => {
+		const refreshSelectedRoute = async () => {
 			const activeSelectedRouteId = selectedRouteIdRef.current;
-
-			if (!activeSelectedRouteId) {
-				return;
-			}
-
+			if (!activeSelectedRouteId) return;
 			const requestVersion = selectedRefreshVersionRef.current + 1;
 			selectedRefreshVersionRef.current = requestVersion;
-
-			void fetchTransitSnapshot()
-				.then(nextSnapshot => {
-					if (
-						selectedRefreshVersionRef.current !== requestVersion ||
-						selectedRouteIdRef.current !== activeSelectedRouteId
-					) {
-						return;
-					}
-
-					setSnapshot(currentSnapshot => {
-						if (!currentSnapshot) {
-							return nextSnapshot;
-						}
-
-						return mergeTransitSnapshots(currentSnapshot, nextSnapshot, new Set([activeSelectedRouteId]));
-					});
-					setError(null);
-				})
-				.catch(caughtError => {
-					setError(caughtError instanceof Error ? caughtError.message : "Couldn't load Rutgers transit data.");
-				});
-		}, SELECTED_TRANSIT_REFRESH_INTERVAL_MS);
-
+			try {
+				const nextSnapshot = await fetchTransitSnapshot();
+				if (
+					selectedRefreshVersionRef.current !== requestVersion ||
+					selectedRouteIdRef.current !== activeSelectedRouteId
+				)
+					return;
+				const mergedSnapshot = getSelectedRouteRefreshSnapshot(
+					snapshotRef.current,
+					nextSnapshot,
+					activeSelectedRouteId
+				);
+				commitSnapshot(mergedSnapshot);
+				setError(null);
+			} catch (caughtError) {
+				setError(getTransitErrorMessage(caughtError));
+			}
+		};
+		const refreshTimer = globalThis.setInterval(
+			() => void refreshSelectedRoute(),
+			SELECTED_TRANSIT_REFRESH_INTERVAL_MS
+		);
 		return () => {
 			selectedRefreshVersionRef.current += 1;
 			globalThis.clearInterval(refreshTimer);
 		};
 	}, [boardClockAnchorMs, selectedRouteId]);
-
 	const routes = snapshot?.routes ?? [];
 	const selectedRoute = routes.find(route => route.id === selectedRouteId) ?? routes[0] ?? null;
-	const routeOptions = selectedRoute && !snapshot?.activeRoutes.some(route => route.id === selectedRoute.id)
-		? [selectedRoute, ...(snapshot?.activeRoutes ?? [])]
-		: (snapshot?.activeRoutes ?? []);
-
-	const handleManualRefresh = () => {
+	const routeOptions = getRouteOptions(snapshot, selectedRoute);
+	const handleManualRefresh = async () => {
 		const requestVersion = boardRefreshVersionRef.current + 1;
 		boardRefreshVersionRef.current = requestVersion;
 		setIsManualRefreshing(true);
-
-		void fetchTransitSnapshot()
-			.then(nextSnapshot => {
-				if (boardRefreshVersionRef.current !== requestVersion) {
-					return;
-				}
-
-				setSnapshot(nextSnapshot);
-				setError(null);
-				setSelectedRouteId(currentRouteId =>
-					currentRouteId && nextSnapshot.routes.some(route => route.id === currentRouteId)
-						? currentRouteId
-						: (nextSnapshot.routes[0]?.id ?? null)
-				);
-			})
-			.catch(caughtError => {
-				setError(caughtError instanceof Error ? caughtError.message : "Couldn't load Rutgers transit data.");
-			})
-			.finally(() => {
-				setIsManualRefreshing(false);
-			});
+		try {
+			const nextSnapshot = await fetchTransitSnapshot();
+			if (boardRefreshVersionRef.current !== requestVersion) return;
+			commitSnapshot(nextSnapshot);
+			setError(null);
+			syncSelectedRouteId(nextSnapshot.routes);
+		} catch (caughtError) {
+			setError(getTransitErrorMessage(caughtError));
+		} finally {
+			setIsManualRefreshing(false);
+		}
 	};
-
 	return (
 		<div className="transit-page">
 			<div className="transit-shell">
@@ -333,7 +309,6 @@ export default function TransitPage() {
 							Live arrivals, route status, and bus-by-bus detail in one place.
 						</p>
 					</div>
-
 					<div className="transit-metric-grid" aria-label="Transit overview">
 						<TransitMetricCard label="Routes in board" value={snapshot?.routes.length ?? "…"} />
 						<TransitMetricCard label="Live buses" value={snapshot?.liveBusCount ?? "…"} />
@@ -344,21 +319,18 @@ export default function TransitPage() {
 						/>
 					</div>
 				</header>
-
 				{snapshot?.systemStatus.isDisrupted ? (
 					<section className="transit-banner transit-banner-warning" aria-label="Transit system status">
 						<strong>Transit feed disruption.</strong>
 						<p>{snapshot.systemStatus.message}</p>
 					</section>
 				) : null}
-
 				{error ? (
 					<section className="transit-banner transit-banner-error" aria-label="Transit loading issue">
 						<strong>Transit feed issue.</strong>
 						<p>{error}</p>
 					</section>
 				) : null}
-
 				{snapshot?.alerts.length ? (
 					<section className="transit-alerts" aria-label="Transit alerts">
 						{snapshot.alerts.map(alert => (
@@ -370,7 +342,6 @@ export default function TransitPage() {
 						))}
 					</section>
 				) : null}
-
 				{isLoading && !snapshot ? (
 					<section className="transit-loading-panel" aria-label="Loading transit data">
 						<p className="transit-card-label">Loading live Rutgers transit data</p>
@@ -378,7 +349,6 @@ export default function TransitPage() {
 						<p>The Rutgers feed is responding, and the first snapshot is on the way in.</p>
 					</section>
 				) : null}
-
 				{snapshot && selectedRoute ? (
 					<main className="transit-layout">
 						<section className="transit-route-panel" aria-label="Route selector">
@@ -398,7 +368,6 @@ export default function TransitPage() {
 									</button>
 								</div>
 							</div>
-
 							<div className="transit-route-list">
 								{routeOptions.map(route => (
 									<TransitRouteButton
@@ -409,7 +378,6 @@ export default function TransitPage() {
 									/>
 								))}
 							</div>
-
 							{snapshot.inactiveRoutes.length > 0 ? (
 								<div className="transit-idle-route-block">
 									<button
@@ -453,7 +421,6 @@ export default function TransitPage() {
 								</div>
 							) : null}
 						</section>
-
 						<section className="transit-board" aria-label="Selected route details">
 							<header className="transit-board-head">
 								<div className="transit-board-heading">
@@ -471,7 +438,6 @@ export default function TransitPage() {
 										</p>
 									</div>
 								</div>
-
 								<div className="transit-board-meta">
 									<p>
 										{selectedRoute.hasScheduledService
@@ -481,7 +447,6 @@ export default function TransitPage() {
 									<p>Route refreshed at {formatShortTime(selectedRoute.updatedAt)}</p>
 								</div>
 							</header>
-
 							{selectedRoute.buses.length > 0 ? (
 								<div className="transit-bus-grid">
 									{selectedRoute.buses.map(bus => (

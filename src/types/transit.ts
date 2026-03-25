@@ -116,3 +116,18 @@ export type TransitSnapshot = Readonly<{
 		message: string;
 	}>;
 }>;
+
+export type TransitMetricCardProps = Readonly<{
+	label: string;
+	value: string | number;
+}>;
+
+export type TransitRouteButtonProps = Readonly<{
+	route: TransitRoute;
+	isSelected: boolean;
+	onSelect: (routeId: string) => void;
+}>;
+
+export type TransitBusCardProps = Readonly<{
+	bus: TransitBus;
+}>;

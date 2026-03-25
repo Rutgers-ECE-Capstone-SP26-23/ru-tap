@@ -12,9 +12,7 @@
 	"semi": true,
 	"singleAttributePerLine": false,
 	"singleQuote": false,
-	"plugins": [
-		"@prettier/plugin-xml"
-	],
+	"plugins": ["@prettier/plugin-xml"],
 	"tabWidth": 4,
 	"trailingComma": "none",
 	"useTabs": true,
