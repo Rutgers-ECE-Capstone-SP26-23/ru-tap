@@ -6,7 +6,7 @@ import { withBasePath } from "@/utils/basePath.ts";
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
 	globalThis.addEventListener("load", () => {
-		void navigator.serviceWorker.register(withBasePath("/sw.js"));
+		void navigator.serviceWorker.register(withBasePath("/sw.js"), { type: "module" });
 	});
 }
 
