@@ -1,11 +1,11 @@
-import { ActionLinks } from "@/components/ActionLinks.tsx";
-import { CoreExperienceCard } from "@/components/CoreExperienceCard.tsx";
-import { FloatingTopButton } from "@/components/FloatingTopButton.tsx";
-import { PanelCard } from "@/components/PanelCard.tsx";
-import { SectionBlock } from "@/components/SectionBlock.tsx";
-import "@/styles/App.css";
-import type { DomainCard } from "@/types/DomainCard.ts";
-import type { Pillar } from "@/types/Pillar.ts";
+import ActionLinks from "@/components/landing/ActionLinks.tsx";
+import CoreExperienceCard from "@/components/landing/CoreExperienceCard.tsx";
+import FloatingTopButton from "@/components/landing/FloatingTopButton.tsx";
+import PanelCard from "@/components/layout/PanelCard.tsx";
+import SectionBlock from "@/components/layout/SectionBlock.tsx";
+import "@/styles/pages/landingPage.css";
+import type DomainCard from "@/types/content/domainCard.ts";
+import type Pillar from "@/types/content/pillar.ts";
 import { withBasePath } from "@/utils/basePath.ts";
 
 const pillars: readonly Pillar[] = [

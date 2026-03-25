@@ -1,9 +1,9 @@
-import { ServiceButtonGrid } from "@/components/ServiceButtonGrid.tsx";
-import { ServiceWidgetPanel } from "@/components/ServiceWidgetPanel.tsx";
+import ServiceButtonGrid from "@/components/myRutgers/ServiceButtonGrid.tsx";
+import ServiceWidgetPanel from "@/components/myRutgers/ServiceWidgetPanel.tsx";
 import { myRutgersServices } from "@/data/myRutgersServices.ts";
 import { withBasePath } from "@/utils/basePath.ts";
 import { useState } from "react";
-import "@/styles/myRutgersPage.css";
+import "@/styles/pages/myRutgersPage.css";
 
 export default function MyRutgersPage() {
 	const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);

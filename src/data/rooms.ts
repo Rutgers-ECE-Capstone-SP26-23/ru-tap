@@ -1,33 +1,7 @@
-export type RoomCampus = "Busch" | "College Ave" | "Cook/Douglass" | "Livingston";
-
-export type RoomType =
-	| "Auditorium"
-	| "Chancellor Learning Space"
-	| "General Purpose Classroom"
-	| "Large Classroom"
-	| "Lecture Hall"
-	| "Seminar Classroom"
-	| "Seminar Room"
-	| "Small Classroom";
-
-export type RoomSeating = "Fixed Chair" | "Moveable Chair" | "Swivel Chair";
-
-export type RoomAddress = Readonly<{
-	street: string;
-	city: string;
-	state: string;
-	zip: string;
-}>;
-
-export type CampusRoomRecord = Readonly<{
-	building: string;
-	type: RoomType;
-	capacity: number;
-	address: RoomAddress;
-	seating: RoomSeating;
-}>;
-
-export type RoomRecord = Readonly<CampusRoomRecord & { campus: RoomCampus }>;
+import type RoomCampus from "@/types/rooms/models/roomCampus.ts";
+import type RoomCatalog from "@/types/rooms/models/roomCatalog.ts";
+import type RoomCode from "@/types/rooms/models/roomCode.ts";
+import type RoomRecord from "@/types/rooms/models/roomRecord.ts";
 
 export const roomsByCampus = {
 	"College Ave": {
@@ -518,11 +492,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		}
 	}
-} as const satisfies Readonly<Record<RoomCampus, Readonly<Record<string, CampusRoomRecord>>>>;
-
-export type RoomCode = {
-	[Campus in keyof typeof roomsByCampus]: keyof (typeof roomsByCampus)[Campus];
-}[keyof typeof roomsByCampus];
+} as const satisfies RoomCatalog;
 
 export const rooms = Object.fromEntries(
 	Object.entries(roomsByCampus).flatMap(([campus, campusRooms]) =>
@@ -534,4 +504,4 @@ export const rooms = Object.fromEntries(
 			}
 		])
 	)
-) as Readonly<Record<RoomCode, RoomRecord>>;
+) as Readonly<Record<RoomCode<typeof roomsByCampus>, RoomRecord>>;

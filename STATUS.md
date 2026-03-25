@@ -3,7 +3,7 @@
 This file is the living snapshot of the repo as it exists right now. Update it when routes, architecture, assets,
 verification status, product scope, or active backlog meaningfully change.
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
 
 ## Project Snapshot
 
@@ -11,90 +11,115 @@ Last updated: 2026-03-24
 - Repo type: single frontend-only web app
 - Stack: Vite 8, React 19, TypeScript 5, ESLint 9, Prettier 3
 - Package manager: `pnpm`
+- Package manager pin: `pnpm@10.33.0` declared in `package.json`
 - Backend: none
 - Router package: none
 - Global state store: none
 - Primary scope document: `FinalConceptualDesign.tex`
-- README status: rewritten around RU Tap and broadly aligned with the current repo
+- Primary durable instruction document: `AGENTS.md`
+- Primary volatile state document: `STATUS.md`
+- README status: rewritten around RU Tap rather than the default Vite template
 
-## Current Route Coverage
-
-| Route / Surface        | Status                | Current Implementation                                                       | Notes                                                                            |
-| ---------------------- | --------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `/`                    | Implemented           | Landing page with product framing, domain cards, and preview launch paths    | Static marketing/product surface only                                            |
-| `/myrutgers`           | Implemented prototype | Academic service directory plus preview panel driven by fixture data         | Integration framework only; every service is still placeholder-backed            |
-| `/transit`             | Implemented prototype | Live Rutgers transit board with route filtering and per-bus stop predictions | Built around the Passio feed and excludes the six routes the user said to ignore |
-| Maps and rooms surface | Not started           | No dedicated route or page yet                                               | Still conceptual only                                                            |
-| Careers surface        | Not started           | No dedicated route or page yet                                               | Still conceptual only                                                            |
-
-## Runtime and Build Architecture
-
-- Entry flow is `index.html` -> `src/main.tsx` -> `src/App.tsx`.
-- `src/main.tsx` mounts the app inside `StrictMode`.
-- `src/main.tsx` imports `src/styles/index.css`.
-- `src/main.tsx` registers a service worker in production with `navigator.serviceWorker.register("/sw.js")`.
-- `src/App.tsx` lazy-loads the current page modules with `React.lazy`.
-- `src/App.tsx` normalizes `globalThis.location.pathname`, strips trailing slashes, lowercases the path, and picks the
-  page manually.
-- `src/App.tsx` currently renders three page modules:
-    - `src/pages/LandingPage.tsx`
-    - `src/pages/MyRutgersPage.tsx`
-    - `src/pages/TransitPage.tsx`
-- `Suspense` currently uses `fallback={null}`, so route-chunk loading still produces a blank interim state.
-- `vite.config.ts` builds both the main app entry and `src/sw.ts`.
-- The built service worker is emitted as `dist/sw.js`.
-- The repo uses the `@` alias for `src/*`.
-
-## Product and Messaging Posture
+## Product Scope and Posture
 
 - RU Tap is still a prototype.
-- The app should not claim live Rutgers production integrations.
-- Current implementation emphasis is still frontend integration framing rather than live Rutgers system integration.
-- The intended four-domain framing is still:
+- The four-domain framing is still:
     - academics
     - transit and rideshare
     - maps and rooms
     - careers
+- The implementation still should not claim live Rutgers production integrations in the UI.
 - Current implementation assumptions that remain in force:
     - no database
     - short-lived caching
     - CAS-aligned path when possible
     - baseline `$0` spend
 
+## Current Route Coverage
+
+| Route / Surface | State                 | Current Implementation                                               | Notes                                                         |
+| --------------- | --------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `/`             | Implemented           | Landing page with RU Tap product framing and preview launch links    | Static product surface only                                   |
+| `/myrutgers`    | Implemented prototype | Academic service directory plus preview panel driven by fixture data | Integration framework only; no real Rutgers widget wiring yet |
+| `/transit`      | Implemented prototype | Live Rutgers transit board using the Passio feed                     | Most actively iterated surface in the repo right now          |
+| Maps / rooms    | Partially started     | Typed room dataset exists in `src/data/rooms.ts`                     | No page route or UI yet                                       |
+| Careers         | Not started           | No dedicated page route or data surface yet                          | Still conceptual only                                         |
+
+## Runtime and Build Architecture
+
+- Entry flow is `index.html` -> `src/main.tsx` -> `src/App.tsx`.
+- `src/main.tsx` mounts the app inside `StrictMode`.
+- `src/main.tsx` imports `src/styles/global/index.css`.
+- `src/main.tsx` registers the service worker only in production.
+- The service worker is registered with:
+    - `withBasePath("/sw.js")`
+    - `{ type: "module" }`
+- `src/App.tsx` lazy-loads page modules with `React.lazy`.
+- `src/App.tsx` uses manual pathname routing rather than a router package.
+- Path normalization is handled by `normalizeAppPath(...)` in `src/utils/basePath.ts`.
+- `src/App.tsx` currently routes to:
+    - `src/pages/LandingPage.tsx`
+    - `src/pages/MyRutgersPage.tsx`
+    - `src/pages/TransitPage.tsx`
+- `Suspense` still uses `fallback={null}`, so route chunk loading still has a blank interim state.
+- `vite.config.ts` builds both:
+    - the main app entry from `index.html`
+    - the service worker entry from `src/sw.ts`
+- The built service worker is emitted as `dist/sw.js`.
+- The repo uses the `@` alias for `src/*`.
+
+## Base Path and Deployment Status
+
+- GitHub Pages deployment workflow exists at `.github/workflows/deploy-pages.yml`.
+- The workflow:
+    - runs on pushes to `main`
+    - supports manual dispatch
+    - installs with `pnpm`
+    - builds `dist`
+    - adds `404.html` for SPA fallback
+    - deploys with the standard GitHub Pages actions
+- `vite.config.ts` computes the Vite `base` automatically for project-site Pages builds.
+- `src/utils/basePath.ts` centralizes:
+    - `withBasePath(...)`
+    - `normalizeAppPath(...)`
+- The current app is therefore set up to run from:
+    - `/` in normal/local environments
+    - `/<repo-name>/` on GitHub Pages project sites
+
 ## Landing Page Status
 
 - File: `src/pages/LandingPage.tsx`
-- Active styles: `src/styles/App.css`
-- Purpose: act as the RU Tap product-facing landing page
+- Active styles: `src/styles/pages/landingPage.css`
+- Purpose: RU Tap product-facing landing page
 - Current hero framing:
     - wordmark: `RU Tap · Rutgers New Brunswick`
     - headline: `One place for your Rutgers day.`
-    - supporting copy explains academics, transit, maps, and careers in one product
+    - supporting copy frames academics, transit, maps, and careers as one product
 - Current sections:
     - Why RU Tap
     - Core Experiences
     - Open the previews
     - Footer
 - Current reusable building blocks used on the page:
-    - `ActionLinks`
-    - `CoreExperienceCard`
-    - `FloatingTopButton`
-    - `PanelCard`
-    - `SectionBlock`
-- Landing-page content arrays remain local to the page module and typed through:
-    - `src/types/DomainCard.ts`
-    - `src/types/Pillar.ts`
+    - `ActionLinks` from `src/components/landing/`
+    - `CoreExperienceCard` from `src/components/landing/`
+    - `FloatingTopButton` from `src/components/landing/`
+    - `PanelCard` from `src/components/layout/`
+    - `SectionBlock` from `src/components/layout/`
+- Landing-page content arrays remain page-local and typed through:
+    - `src/types/content/domainCard.ts`
+    - `src/types/content/pillar.ts`
 - Current preview launch state:
-    - transit preview is linked from the landing page
-    - myRutgers preview is linked from the landing page
-- Route chunk status:
+    - links to `/myrutgers`
+    - links to `/transit`
+- Route-chunk status:
     - JS chunk emitted separately from the main shell
     - CSS chunk emitted separately from the main shell
 
 ## myRutgers Status
 
 - File: `src/pages/MyRutgersPage.tsx`
-- Active styles: `src/styles/myRutgersPage.css`
+- Active styles: `src/styles/pages/myRutgersPage.css`
 - Purpose: academic preview / integration-framework surface
 - Current header structure:
     - home link text: `RU Tap`
@@ -107,12 +132,12 @@ Last updated: 2026-03-24
     - desktop split begins at `min-width: 980px`
 - Current interaction model:
     - local `selectedServiceId` state
-    - `selectedService` derived from `myRutgersServices`
+    - `selectedService` derived from fixture metadata
     - selecting a card populates the preview panel
     - no selected service shows an empty-state preview panel
 - Current implementation status of services:
     - count: 5
-    - all services are currently `planned`
+    - all services currently marked `planned`
     - all services currently use `embedMode: "placeholder"`
     - no live iframe integrations are currently enabled
 - Current services in the fixture set:
@@ -122,90 +147,220 @@ Last updated: 2026-03-24
     - Registration
     - Announcements
 - Current component path:
-    - `MyRutgersPage` -> `ServiceButtonGrid` -> `ServiceButtonCard`
-    - `MyRutgersPage` -> `ServiceWidgetPanel` -> `WidgetPlaceholder` or iframe
+    - `MyRutgersPage` -> `src/components/myRutgers/ServiceButtonGrid.tsx` -> `ServiceButtonCard`
+    - `MyRutgersPage` -> `src/components/myRutgers/ServiceWidgetPanel.tsx` -> `WidgetPlaceholder` or iframe
 - Current styling posture:
-    - simpler two-panel layout after several rejected redesign iterations
-    - service and preview panels are set up to stretch to equal row height on desktop
-    - header text measure and wrap behavior were recently adjusted to reduce awkward line breaks
+    - intentionally simpler two-panel layout after earlier rejected redesigns
+    - service and preview panels are set up to align in height on desktop
+    - component prop types now live under `src/types/components/props/`
+    - myRutgers model types now live under `src/types/myRutgers/models/`
+
+## Component Layout Status
+
+- Components are now categorized under `src/components/` by role:
+    - `src/components/landing/`
+    - `src/components/layout/`
+    - `src/components/myRutgers/`
+    - `src/components/transit/`
+- All moved component modules now use default exports.
+- Current folder split:
+    - `landing/`: `ActionLinks`, `CoreExperienceCard`, `FloatingTopButton`
+    - `layout/`: `PanelCard`, `SectionBlock`
+    - `myRutgers/`: `ServiceButtonCard`, `ServiceButtonGrid`, `ServiceWidgetPanel`, `WidgetPlaceholder`
+    - `transit/`: `TransitBusCard`, `TransitMetricCard`, `TransitRouteButton`, `TransitRouteGroup`
 
 ## Transit Status
 
 - File: `src/pages/TransitPage.tsx`
-- Active styles: `src/styles/transitPage.css`
-- Purpose: first-pass RU Tap transit board for Rutgers buses
-- Current data source:
-    - `https://store.piemadd.com/passio_go/rutgers`
+- Active styles: `src/styles/pages/transitPage.css`
+- Purpose: first-pass RU Tap transit board for Rutgers New Brunswick buses
+- Current page structure:
+    - `TransitPage.tsx` now acts as the stateful orchestration shell
+    - transit-presentational subcomponents now live under `src/components/transit/`
+    - the generic responsive hook lives at `src/hooks/useMediaQuery.ts`
+    - transit geolocation state now lives in `src/hooks/transit/useTransitLocation.ts`
+    - transit route selection, collapse, minimize, and mobile autoscroll state now live in
+      `src/hooks/transit/useTransitRouteSelection.ts`
+    - transit snapshot/refresh orchestration now lives in `src/hooks/transit/useTransitSnapshot.ts`
+    - transit route-board/view-state derivation now lives in `src/utils/transit/boardViewState.ts`
+    - shared transit display/formatting helpers live at `src/utils/transit/display.ts`
+
+### Transit Data Source and Feed Mapping
+
+- Data source: `https://store.piemadd.com/passio_go/rutgers`
 - Current feed shape consumed by the app:
-    - live buses from `trains`
     - route metadata from `lines`
-    - service notices from `alerts`
-    - update timestamp from `lastUpdated`
-    - top-level system health from `shitsFucked`
-- Current polling behavior:
-    - fetches live data on load
-    - starts a 30-second board refresh clock after the first successful page load
-    - updates unselected routes on the 30-second board clock
-    - gives the currently selected route its own 5-second refresh clock
-    - the selected route ignores 30-second board refresh updates while it remains selected
-    - supports manual full-board refresh
-- Current route filtering:
-    - Camden is excluded
-    - Campus Connect is excluded
-    - Campus Connect Express is excluded
-    - Newark Hotel Route is excluded
-    - Penn Station Local is excluded
-    - Penn Station Express is excluded
-- Current board structure:
-    - hero with live route, bus, alert, and board-update metrics
-    - filtered route selector rail
-    - selected-route detail panel
-    - per-bus cards with up to three stop predictions each
-    - collapsed inactive-route disclosure for routes not running right now
-    - alert banner area for included-route notices
-- Current interaction model:
-    - route selection is local page state
-    - the first available filtered route is selected by default
-    - the board keeps the current route selected across refreshes when possible
-    - inactive selected routes stay visible in the route picker while selected
-- Current browser verification:
-    - route switching was checked on `http://localhost:5173/transit`
-    - a duplicate-key warning from repeated stop IDs was found and fixed
-    - a follow-up console check after the fix reported zero errors
-- Current implementation limits:
-    - no map view yet
-    - no stop search yet
-    - no favorites yet
-    - no rideshare layer yet
-    - no transit-specific offline cache strategy yet
+    - stop metadata from `stations`
+    - live vehicles from `trains`
+    - notices from `alerts`
+    - timestamp from `lastUpdated`
+    - top-level disruption state from `shitsFucked`
+- The raw Passio feed is normalized into RU Tap-specific route, stop, bus, alert, and system-status models before
+  render.
+- Route models currently keep:
+    - route ID
+    - full route name
+    - short name
+    - route color and text color
+    - route-level `updatedAt`
+    - stop list
+    - inferred campus list
+    - live bus list
+- Bus models currently keep:
+    - run number
+    - destination
+    - heading
+    - real-time flag
+    - up to three stop predictions
 
-## Data and Type Status
+### Transit Filtering and Ordering
 
-- myRutgers metadata is centralized in `src/data/myRutgersServices.ts`.
-- myRutgers types live in `src/types/myRutgers.ts`.
-- Transit-specific models now live in `src/types/transit.ts`.
-- Transit feed adaptation now lives in `src/data/transit.ts`.
-- The raw Passio feed is adapted into filtered RU Tap route, bus, alert, and system-status models before rendering.
-- `MyRutgersService` currently models:
-    - `id`
-    - `title`
-    - `summary`
-    - `status`
-    - `embedMode`
-    - optional `embedUrl`
-    - optional `notes`
-- `MyRutgersServiceStatus` currently allows:
-    - `ready`
-    - `planned`
-- `MyRutgersEmbedMode` currently allows:
-    - `iframe`
-    - `placeholder`
-- Transit route modeling currently keeps:
-    - route ID, name, short name, color, and text color
-    - route-level `updatedAt` timestamps
-    - bus run number, destination, heading, and real-time flag
-    - up to three next-stop predictions per bus
-    - filtered alerts and top-level feed health
+- The following routes are excluded from the RU Tap transit board:
+    - Camden
+    - Campus Connect
+    - Campus Connect Express
+    - Newark Hotel Route
+    - Penn Station Local
+    - Penn Station Express
+- Ordered route preference is currently hardcoded in `src/data/transit.ts`.
+- When fine mobile location is available and a nearest stop can be inferred, active routes touching that stop are
+  prioritized to the top of the mobile active list.
+
+### Transit Refresh Behavior
+
+- Current board refresh interval: 30 seconds
+- Current selected-route refresh interval: 15 seconds
+- Current refresh model:
+    - initial fetch on page load
+    - board clock starts after first successful load
+    - board clock refreshes the overall route board every 30 seconds
+    - selected route gets its own 15-second refresh clock
+    - selected route ignores board-clock route updates while selected
+    - manual `Refresh Now` refreshes the full board immediately
+- Merge logic is handled so stale selected-route refreshes do not clobber newer board state.
+
+### Transit Interaction Model
+
+- No route is selected by default.
+- Selected route state is local to the page.
+- The selected-route UI state is now coordinated through `src/hooks/transit/useTransitRouteSelection.ts`.
+- The selected route is preserved across refreshes when still present.
+- A selected route can be minimized back out of the detail panel.
+- Bus labels display as `Bus <number>` rather than `Run <number>`.
+- Numeric portions of run numbers are parsed to remove leading zeroes in the display layer.
+- The selected route detail header now:
+    - removes the redundant trailing word `Route` from the title when applicable
+    - uses a bolder route title for emphasis
+    - omits the old `Service is active in the feed.` line
+    - tints the entire route detail panel with the route color instead of using a large duplicate route badge
+
+### Transit Layout Behavior
+
+- Wide screens (`min-width: 1040px`):
+    - no selection: route board occupies the available width while the detail panel space is collapsed
+    - with selection: the route board shrinks into the left rail and the detail panel animates in on the right
+    - minimizing reverses that motion
+- Mobile screens (`max-width: 759px`):
+    - no selection: detail panel does not render
+    - selected route detail panel rolls open below the route board
+    - minimizing rolls the panel back up
+    - route selection also attempts to autoscroll the viewport to the route detail panel
+    - the mobile autoscroll now waits for active-route autocollapse before computing its target
+
+### Transit Mobile Location Behavior
+
+- Mobile route-board behavior attempts location immediately on page load.
+- Current behavior is best-effort geolocation rather than true permission-tier detection.
+- Current location flow:
+    - request high-accuracy location first
+    - if that fails, request lower-accuracy location
+    - infer `fine` vs `coarse` from the returned accuracy threshold
+    - fall back to `location unavailable` behavior if no usable position is returned
+- Current mobile collapsed-state behavior:
+    - if fine location is available and a nearest stop is inferred:
+        - show routes serving that stop
+        - prioritize those routes to the top
+    - if only coarse location is available:
+        - show routes serving the inferred campus
+    - if location is still resolving:
+        - show `Finding nearby routes...`
+    - if location is unavailable:
+        - show `Location unavailable. Expand to browse all routes.`
+- Current geolocation robustness notes:
+    - a timeout now forces the page out of the indefinite resolving state
+    - the dev-only StrictMode effect replay issue that could strand the page in `Finding nearby routes...` was patched
+      by resetting the request guard during cleanup
+
+### Transit Disclosure and Animation Behavior
+
+- Active routes and inactive routes are both collapsible.
+- Active routes:
+    - keep route-colored buttons and badges
+    - auto-collapse after selecting a route
+    - now stage the peek-state appearance so the collapse feels smoother
+- Inactive routes:
+    - stay styled as simpler chips
+    - remain collapsed by default
+- The route detail panel:
+    - fades and slides in
+    - fades and slides out on minimize
+    - uses slower motion than the earlier version
+
+### Current Transit Gaps
+
+- No map view yet
+- No stop search yet
+- No favorites yet
+- No rideshare layer yet
+- No transit-specific offline cache strategy yet
+- No automated UI tests yet
+
+## Maps and Rooms Status
+
+- There is no dedicated maps / rooms page route yet.
+- A typed room dataset now exists at `src/data/rooms.ts`.
+- `src/data/rooms.ts` currently provides:
+    - `roomsByCampus` as the primary grouped structure
+    - derived flat `rooms`
+    - imports its room model types from `src/types/rooms/models/`
+- The dataset is grouped by campus rather than stored as one flat literal with repeated campus values.
+- This is data scaffolding only right now; there is no active UI surface consuming it yet.
+
+## Careers Status
+
+- No dedicated careers route exists yet.
+- No careers-specific data layer exists yet.
+- The careers surface remains conceptual and is only represented in landing-page messaging.
+
+## Data and Type Layout Status
+
+- myRutgers fixture metadata lives in `src/data/myRutgersServices.ts`.
+- Transit feed adaptation lives in `src/data/transit.ts`.
+- Rooms data scaffolding lives in `src/data/rooms.ts`.
+- Type modules under `src/types/` now follow a one-type-per-file default-export convention.
+- The current import style for app-local types is therefore `import type X from "...";` rather than named type imports.
+- Shared landing/content types now live under `src/types/content/`.
+- Component prop types now live under `src/types/components/props/`.
+- Rooms model types now live under `src/types/rooms/models/`.
+- myRutgers model types now live under `src/types/myRutgers/models/`:
+    - `myRutgersService.ts`
+    - `myRutgersServiceStatus.ts`
+    - `myRutgersEmbedMode.ts`
+- Transit types now live under role-based folders in `src/types/transit/`:
+- Current transit type files include:
+    - feed-shape types in `src/types/transit/feed/`: `passioFeed.ts`, `passioLine.ts`, `passioStation.ts`,
+      `passioTrain.ts`, `passioPrediction.ts`, `passioAlert.ts`, `passioSystemStatus.ts`
+    - hook parameter types in `src/types/transit/hooks/`: `transitRouteSelectionParams.ts`
+    - app-model types in `src/types/transit/models/`: `transitAlert.ts`, `transitBus.ts`, `transitCampus.ts`,
+      `transitPrediction.ts`, `transitRoute.ts`, `transitSnapshot.ts`, `transitStop.ts`
+    - UI prop types in `src/types/transit/props/`: `transitBusCardProps.ts`, `transitMetricCardProps.ts`,
+      `transitRouteButtonProps.ts`, `transitRouteGroupProps.ts`
+    - page-local transit types in `src/types/transit/pages/`: `transitLocationState.ts`, `transitBoardViewState.ts`,
+      `transitBoardViewStateParams.ts`
+    - internal transit data types in `src/types/transit/data/`: `mutableTransitRoute.ts`
+- Service worker helper types now live under role-based folders in `src/types/serviceWorker/`:
+    - global scope type in `src/types/serviceWorker/globals/`
+    - event types in `src/types/serviceWorker/events/`
 
 ## PWA and Installability Status
 
@@ -214,55 +369,56 @@ Last updated: 2026-03-24
 - Current manifest identity:
     - `name`: `RU Tap`
     - `short_name`: `RU Tap`
+    - `id`: `.`
+    - `scope`: `.`
+    - `start_url`: `.`
     - `display`: `standalone`
-    - `start_url`: `/`
-    - `scope`: `/`
+    - `theme_color`: `#c03`
 - Current manifest category posture:
     - education
     - productivity
     - navigation
 - Current app icon source: `public/favicon.svg`
-- Current favicon status:
-    - Rutgers-scarlet tile
-    - animated pulse/ring accent
-    - white `R` on the topmost layer
+- Current favicon posture:
+    - animated SVG favicon
+    - Rutgers-inspired `R`
+    - pulsing circle / ring accent
 - Current install model:
     - one site-wide install target only
-    - no separate per-page manifests
+    - no per-page manifests
     - no multi-page install setup
 
 ## Service Worker Status
 
 - Source file: `src/sw.ts`
-- Extracted worker types: `src/types/serviceWorker.ts`
 - Built output: `dist/sw.js`
+- Registration path: `withBasePath("/sw.js")`
+- Registration mode: module service worker
 - Current cache names:
-    - `ru-tap-shell-v1`
-    - `ru-tap-runtime-v1`
+    - `ru-tap-shell-v2`
+    - `ru-tap-runtime-v2`
 - Current app-shell precache list:
     - `/`
     - `/manifest.webmanifest`
     - `/favicon.svg`
     - `/up-arrow.svg`
-- Current navigation behavior:
-    - network-first style fetch
-    - falls back to cached `/` on failure
-- Current same-origin runtime caching:
-    - scripts
-    - styles
-    - images
-    - fonts
-    - web manifests
-- No route-specific service worker scopes or separate PWAs currently exist.
+- Current service-worker strategy:
+    - navigation requests: network-first with cached shell fallback
+    - same-origin scripts / styles / images / fonts / manifests: stale-while-revalidate
+- No route-specific service-worker scopes or separate PWAs currently exist.
 
 ## Styling and File Layout Status
 
 - Active styles are under `src/styles/`.
-- The active global stylesheet is `src/styles/index.css`.
-- Landing-page styles live in `src/styles/App.css`.
-- myRutgers-page styles live in `src/styles/myRutgersPage.css`.
-- transit-page styles live in `src/styles/transitPage.css`.
-- Component-specific styles currently exist for:
+- Styles are now categorized by role:
+    - `src/styles/global/`
+    - `src/styles/pages/`
+    - `src/styles/components/`
+- The active global stylesheet is `src/styles/global/index.css`.
+- Landing-page styles live in `src/styles/pages/landingPage.css`.
+- myRutgers-page styles live in `src/styles/pages/myRutgersPage.css`.
+- transit-page styles live in `src/styles/pages/transitPage.css`.
+- Component-specific styles now live in `src/styles/components/` for:
     - `ActionLinks`
     - `CoreExperienceCard`
     - `FloatingTopButton`
@@ -272,42 +428,62 @@ Last updated: 2026-03-24
     - `ServiceButtonGrid`
     - `ServiceWidgetPanel`
     - `WidgetPlaceholder`
-- `src/App.css` and `src/index.css` in the repo root are legacy copies and are not part of the active import graph.
+- The legacy root stylesheets `src/App.css` and `src/index.css` have been removed.
+- No static component CSS remains stranded inside component TSX files.
+- The remaining `style={...}` usage is intentional and dynamic:
+    - route-color and panel-tint styles in `src/pages/TransitPage.tsx`
+    - the base-aware arrow mask variable in `src/components/landing/FloatingTopButton.tsx`
 
 ## Verification Snapshot
 
-Verified on: 2026-03-24
+Verified on: 2026-03-25
 
-- `pnpm lint`: passes
 - `pnpm build`: passes
-- Local browser check against `http://localhost:5173/transit`: completed
+- `pnpm lint`: passes
+
+Fresh browser verification status:
+
+- No fresh end-to-end browser pass was run after the latest transit polish in this update cycle.
+- The most recent verified checks in this turn are build and lint only.
 
 Current build artifact snapshot from the latest verified build:
 
 | Output                                   | Size      | Gzip     |
 | ---------------------------------------- | --------- | -------- |
-| `dist/index.html`                        | 0.90 kB   | 0.47 kB  |
+| `dist/index.html`                        | 0.99 kB   | 0.50 kB  |
 | `dist/assets/main-Dy08tWEJ.css`          | 1.64 kB   | 0.74 kB  |
-| `dist/assets/LandingPage-CXcsF3BE.css`   | 3.96 kB   | 1.37 kB  |
+| `dist/assets/LandingPage-NC-bG56g.css`   | 4.01 kB   | 1.37 kB  |
 | `dist/assets/MyRutgersPage-BjKSSzqQ.css` | 4.19 kB   | 1.25 kB  |
-| `dist/assets/TransitPage-CYx28Rml.css`   | 6.86 kB   | 1.83 kB  |
+| `dist/assets/TransitPage-B7tawBiA.css`   | 9.39 kB   | 2.23 kB  |
+| `dist/assets/basePath-DFIoE6gw.js`       | 0.35 kB   | 0.22 kB  |
 | `dist/assets/jsx-runtime-CGqjDhly.js`    | 0.44 kB   | 0.29 kB  |
-| `dist/sw.js`                             | 1.02 kB   | 0.54 kB  |
-| `dist/assets/MyRutgersPage-CSPWXTlD.js`  | 4.47 kB   | 1.43 kB  |
-| `dist/assets/LandingPage-C5rvRefv.js`    | 5.10 kB   | 2.00 kB  |
-| `dist/assets/TransitPage-C68gpwpP.js`    | 12.92 kB  | 4.05 kB  |
-| `dist/assets/main-Dlf4hznV.js`           | 192.14 kB | 60.71 kB |
+| `dist/sw.js`                             | 1.09 kB   | 0.58 kB  |
+| `dist/assets/MyRutgersPage-BMuKjSsh.js`  | 4.52 kB   | 1.45 kB  |
+| `dist/assets/LandingPage-CaGfKP32.js`    | 5.22 kB   | 2.07 kB  |
+| `dist/assets/TransitPage-DQoTZ41s.js`    | 21.33 kB  | 6.85 kB  |
+| `dist/assets/main-DOty22yD.js`           | 192.21 kB | 60.75 kB |
 
 Testing status:
 
 - No automated test suite is configured yet.
-- There are no committed unit, integration, or end-to-end tests in the current repo.
+- There are no committed unit, integration, or end-to-end test files in the repo right now.
+
+## Current Working-Tree Snapshot
+
+- The worktree is currently dirty.
+- This includes active edits in:
+    - component folder layout under `src/components/`
+    - transit page logic and styling
+    - myRutgers-related components and data
+    - service worker and base-path utilities
+    - the split type-folder layout under `src/types/`
+- `STATUS.md` itself is also modified by this update.
 
 ## Known Gaps and Constraints
 
-- No live Rutgers system integration beyond public transit data
 - No backend
 - No database
+- No live Rutgers system integration beyond the public transit feed
 - No CAS/session wiring beyond product-direction messaging
 - No maps-and-rooms page yet
 - No careers page yet
@@ -317,43 +493,67 @@ Testing status:
 - No test suite
 - `Suspense` route fallback is still `null`
 - myRutgers services remain placeholder content rather than real widgets
-- transit currently has no map, stop search, favorites, or rideshare layer
+- transit still has no map, stop search, favorites, or rideshare layer
 
 ## Important Files and Responsibilities
 
-| File                            | Current Responsibility                                        |
-| ------------------------------- | ------------------------------------------------------------- |
-| `index.html`                    | Base HTML document, manifest link, app metadata, favicon link |
-| `src/main.tsx`                  | React mount point and production service-worker registration  |
-| `src/App.tsx`                   | Manual pathname routing and lazy page loading                 |
-| `src/pages/LandingPage.tsx`     | RU Tap landing page content and section composition           |
-| `src/pages/MyRutgersPage.tsx`   | myRutgers page state, layout, and service selection           |
-| `src/pages/TransitPage.tsx`     | Transit page state, route selection, and live bus board UI    |
-| `src/data/myRutgersServices.ts` | Fixture metadata for academic services                        |
-| `src/data/transit.ts`           | Rutgers transit feed fetch, filtering, and transformation     |
-| `src/types/myRutgers.ts`        | myRutgers data model types                                    |
-| `src/types/transit.ts`          | Transit feed and UI model types                               |
-| `src/sw.ts`                     | Service worker runtime logic                                  |
-| `src/types/serviceWorker.ts`    | Service worker type helpers                                   |
-| `src/styles/index.css`          | Active global styling entry                                   |
-| `src/styles/App.css`            | Landing page styling                                          |
-| `src/styles/myRutgersPage.css`  | myRutgers page styling                                        |
-| `src/styles/transitPage.css`    | Transit page styling                                          |
-| `public/manifest.webmanifest`   | Install metadata                                              |
-| `public/favicon.svg`            | Animated app icon / favicon                                   |
-| `vite.config.ts`                | Vite config, aliasing, and service-worker build wiring        |
+| File                                            | Current Responsibility                                                                  |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `index.html`                                    | Base HTML document, app metadata, manifest link, favicon link                           |
+| `src/main.tsx`                                  | React mount point and production service-worker registration                            |
+| `src/App.tsx`                                   | Manual pathname routing and lazy page loading                                           |
+| `src/utils/basePath.ts`                         | Base-aware path generation and pathname normalization                                   |
+| `src/pages/LandingPage.tsx`                     | RU Tap landing page content and section composition                                     |
+| `src/pages/MyRutgersPage.tsx`                   | myRutgers page state, layout, and service selection                                     |
+| `src/pages/TransitPage.tsx`                     | Transit page state, route selection, mobile/desktop behavior, and top-level composition |
+| `src/components/landing/*`                      | Landing-page-specific reusable UI pieces                                                |
+| `src/components/layout/*`                       | Shared structural card/section building blocks                                          |
+| `src/components/myRutgers/*`                    | myRutgers selector and preview-panel components                                         |
+| `src/components/transit/*`                      | Transit-presentational UI components used by `TransitPage.tsx`                          |
+| `src/data/myRutgersServices.ts`                 | Fixture metadata for academic services                                                  |
+| `src/data/transit.ts`                           | Rutgers transit feed fetch, filtering, normalization, and snapshot merging              |
+| `src/data/rooms.ts`                             | Typed rooms dataset grouped by campus                                                   |
+| `src/hooks/useMediaQuery.ts`                    | Shared media-query subscription hook                                                    |
+| `src/hooks/transit/useTransitLocation.ts`       | Transit geolocation request and fallback behavior                                       |
+| `src/hooks/transit/useTransitRouteSelection.ts` | Transit route selection, collapse, minimize, and mobile autoscroll state                |
+| `src/hooks/transit/useTransitSnapshot.ts`       | Transit snapshot loading, refresh cadence, and manual refresh handling                  |
+| `src/types/content/*`                           | Landing/content-facing shared types                                                     |
+| `src/types/components/props/*`                  | Component prop types extracted from component modules                                   |
+| `src/types/rooms/models/*`                      | Rooms domain model types used by `src/data/rooms.ts`                                    |
+| `src/types/myRutgers/models/*`                  | myRutgers enums and service model types                                                 |
+| `src/types/transit/feed/*`                      | Passio feed-shape types                                                                 |
+| `src/types/transit/hooks/*`                     | Transit hook parameter types                                                            |
+| `src/types/transit/models/*`                    | Transit app-model types                                                                 |
+| `src/types/transit/props/*`                     | Transit UI prop types                                                                   |
+| `src/types/transit/pages/*`                     | Transit page-local state and disclosure types                                           |
+| `src/types/transit/data/*`                      | Transit data-layer helper types                                                         |
+| `src/utils/transit/boardViewState.ts`           | Transit route-board ordering, peek-state, and layout derivation                         |
+| `src/utils/transit/display.ts`                  | Transit display formatting and route-color style helpers                                |
+| `src/types/serviceWorker/globals/*`             | Service-worker global-scope typing helpers                                              |
+| `src/types/serviceWorker/events/*`              | Service-worker event types                                                              |
+| `src/sw.ts`                                     | Service-worker runtime logic                                                            |
+| `src/styles/global/index.css`                   | Active global styling entry                                                             |
+| `src/styles/pages/landingPage.css`              | Landing page styling                                                                    |
+| `src/styles/pages/myRutgersPage.css`            | myRutgers page styling                                                                  |
+| `src/styles/pages/transitPage.css`              | Transit page styling                                                                    |
+| `src/styles/components/*`                       | Component-specific stylesheets                                                          |
+| `public/manifest.webmanifest`                   | Install metadata                                                                        |
+| `public/favicon.svg`                            | Animated app icon / favicon                                                             |
+| `vite.config.ts`                                | Vite config, aliasing, Pages base logic, and service-worker build wiring                |
+| `.github/workflows/deploy-pages.yml`            | GitHub Pages build-and-deploy workflow                                                  |
 
 ## Next Queued Work
 
-The active feature area is now transit expansion rather than transit setup.
+The active feature area is still transit iteration, but the user explicitly paused that thread after reaching a
+satisfactory point for now.
 
-High-signal next steps for transit:
+High-signal next steps currently visible in the repo:
 
-- add a map surface
-- add stop-focused views or search
-- add favorites if the product still wants them
-- decide whether weekend and overnight routes need a different presentation
-- decide how rideshare should fit into the transit surface
+- add an actual maps / rooms surface on top of `src/data/rooms.ts`
+- add a careers surface
+- deepen transit with a map, stop search, favorites, or rideshare integration
+- replace myRutgers placeholders with real preview widgets when product scope allows
+- decide whether to improve the blank `Suspense` fallback
 
 ## Documentation Policy
 

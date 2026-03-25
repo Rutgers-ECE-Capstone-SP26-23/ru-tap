@@ -1,18 +1,20 @@
-import type {
-	PassioFeed,
-	PassioLine,
-	PassioTrain,
-	TransitAlert,
-	TransitBus,
-	TransitPrediction,
-	TransitRoute,
-	TransitSnapshot
-} from "@/types/transit.ts";
+import type MutableTransitRoute from "@/types/transit/data/mutableTransitRoute.ts";
+import type PassioFeed from "@/types/transit/feed/passioFeed.ts";
+import type PassioLine from "@/types/transit/feed/passioLine.ts";
+import type PassioStation from "@/types/transit/feed/passioStation.ts";
+import type PassioTrain from "@/types/transit/feed/passioTrain.ts";
+import type TransitAlert from "@/types/transit/models/transitAlert.ts";
+import type TransitBus from "@/types/transit/models/transitBus.ts";
+import type TransitCampus from "@/types/transit/models/transitCampus.ts";
+import type TransitPrediction from "@/types/transit/models/transitPrediction.ts";
+import type TransitRoute from "@/types/transit/models/transitRoute.ts";
+import type TransitSnapshot from "@/types/transit/models/transitSnapshot.ts";
+import type TransitStop from "@/types/transit/models/transitStop.ts";
 
 const TRANSIT_FEED_URL = "https://store.piemadd.com/passio_go/rutgers";
 
 export const TRANSIT_REFRESH_INTERVAL_MS = 30_000;
-export const SELECTED_TRANSIT_REFRESH_INTERVAL_MS = 5_000;
+export const SELECTED_TRANSIT_REFRESH_INTERVAL_MS = 15_000;
 
 export const excludedTransitRouteNames = [
 	"Camden",
@@ -43,16 +45,16 @@ const transitRouteOrder = [
 
 const transitRouteOrderIndex = new Map<string, number>(transitRouteOrder.map((routeName, index) => [routeName, index]));
 
-type MutableTransitRoute = {
-	id: string;
-	name: string;
-	shortName: string;
-	color: string;
-	textColor: string;
-	hasScheduledService: boolean;
-	buses: TransitBus[];
-	updatedAt: string;
-};
+const transitCampusCenters: readonly Readonly<{
+	campus: TransitCampus;
+	latitude: number;
+	longitude: number;
+}>[] = [
+	{ campus: "Cook/Douglass", latitude: 40.4855, longitude: -74.4345 },
+	{ campus: "College Avenue", latitude: 40.4995, longitude: -74.4454 },
+	{ campus: "Busch", latitude: 40.5208, longitude: -74.4633 },
+	{ campus: "Livingston", latitude: 40.5233, longitude: -74.4398 }
+] as const;
 
 function normalizeHexColor(color: string) {
 	return `#${color.padStart(6, "0")}`.toUpperCase();
@@ -72,6 +74,49 @@ function getTransitPrediction(prediction: PassioTrain["predictions"][number]): T
 	};
 }
 
+function getDistanceBetweenCoordinates(
+	startLatitude: number,
+	startLongitude: number,
+	endLatitude: number,
+	endLongitude: number
+) {
+	const latitudeDelta = startLatitude - endLatitude;
+	const longitudeDelta = startLongitude - endLongitude;
+
+	return latitudeDelta ** 2 + longitudeDelta ** 2;
+}
+
+export function inferTransitCampus(latitude: number, longitude: number): TransitCampus {
+	let nearestCampus = transitCampusCenters[0].campus;
+	let nearestDistance = Number.POSITIVE_INFINITY;
+
+	for (const campusCenter of transitCampusCenters) {
+		const distance = getDistanceBetweenCoordinates(
+			latitude,
+			longitude,
+			campusCenter.latitude,
+			campusCenter.longitude
+		);
+
+		if (distance < nearestDistance) {
+			nearestDistance = distance;
+			nearestCampus = campusCenter.campus;
+		}
+	}
+
+	return nearestCampus;
+}
+
+function getTransitStop(station: PassioStation): TransitStop {
+	return {
+		id: station.stationID,
+		name: station.stationName,
+		latitude: station.lat,
+		longitude: station.lon,
+		campus: inferTransitCampus(station.lat, station.lon)
+	};
+}
+
 function sortBusesByNextEta(leftBus: TransitBus, rightBus: TransitBus) {
 	const leftEta = leftBus.nextStops[0]?.etaMs ?? Number.MAX_SAFE_INTEGER;
 	const rightEta = rightBus.nextStops[0]?.etaMs ?? Number.MAX_SAFE_INTEGER;
@@ -88,6 +133,10 @@ function sortRoutes(leftRoute: TransitRoute, rightRoute: TransitRoute) {
 
 function sanitizeAlertMessage(message: string) {
 	return message.replaceAll(/\s*BR\s*/g, "\n").trim();
+}
+
+function getRouteCampuses(stops: readonly TransitStop[]) {
+	return [...new Set(stops.map(stop => stop.campus))];
 }
 
 function buildTransitSnapshotFromParts(
@@ -126,9 +175,12 @@ function buildTransitSnapshot(feed: PassioFeed): TransitSnapshot {
 	const routeMap = new Map<string, MutableTransitRoute>();
 
 	for (const line of allLines) {
-		if (excludedLineCodes.has(line.lineCode)) {
-			continue;
-		}
+		if (excludedLineCodes.has(line.lineCode)) continue;
+
+		const stops = line.stations
+			.map(stationId => feed.stations[stationId])
+			.filter((station): station is PassioStation => station !== undefined)
+			.map(getTransitStop);
 
 		routeMap.set(line.lineCode, {
 			id: line.lineCode,
@@ -137,15 +189,15 @@ function buildTransitSnapshot(feed: PassioFeed): TransitSnapshot {
 			color: normalizeHexColor(line.routeColor),
 			textColor: normalizeHexColor(line.routeTextColor),
 			hasScheduledService: line.hasActiveTrains,
+			stops,
+			campuses: getRouteCampuses(stops),
 			buses: [],
 			updatedAt: feed.lastUpdated
 		});
 	}
 
 	for (const [runNumber, train] of Object.entries(feed.trains)) {
-		if (excludedLineCodes.has(train.lineCode)) {
-			continue;
-		}
+		if (excludedLineCodes.has(train.lineCode)) continue;
 
 		const existingRoute = routeMap.get(train.lineCode);
 		const bus: TransitBus = {
@@ -178,6 +230,8 @@ function buildTransitSnapshot(feed: PassioFeed): TransitSnapshot {
 			color: normalizeHexColor(train.lineColor),
 			textColor: normalizeHexColor(train.lineTextColor),
 			hasScheduledService: true,
+			stops: [],
+			campuses: [],
 			buses: [bus],
 			updatedAt: feed.lastUpdated
 		});
@@ -237,9 +291,7 @@ export function mergeTransitSnapshots(
 			continue;
 		}
 
-		if (nextRoute) {
-			mergedRoutes.push(nextRoute);
-		}
+		if (nextRoute) mergedRoutes.push(nextRoute);
 	}
 
 	return buildTransitSnapshotFromParts(
@@ -258,9 +310,7 @@ export async function fetchTransitSnapshot(signal?: AbortSignal): Promise<Transi
 		signal
 	});
 
-	if (!response.ok) {
-		throw new Error(`Rutgers transit feed returned ${response.status}.`);
-	}
+	if (!response.ok) throw new Error(`Rutgers transit feed returned ${response.status}.`);
 
 	return buildTransitSnapshot((await response.json()) as PassioFeed);
 }

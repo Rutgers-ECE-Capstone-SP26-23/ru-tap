@@ -1,4 +1,4 @@
-import type { MyRutgersService } from "@/types/myRutgers.ts";
+import type MyRutgersService from "@/types/myRutgers/models/myRutgersService.ts";
 
 export const myRutgersServices: readonly MyRutgersService[] = [
 	{

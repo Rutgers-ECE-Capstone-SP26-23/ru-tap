@@ -1,4 +1,4 @@
-import type { ServiceWorkerGlobalScopeLike } from "@/types/serviceWorker.ts";
+import type ServiceWorkerGlobalScopeLike from "@/types/serviceWorker/globals/serviceWorkerGlobalScopeLike.ts";
 import { withBasePath } from "@/utils/basePath.ts";
 
 const serviceWorkerScope = globalThis as ServiceWorkerGlobalScopeLike;

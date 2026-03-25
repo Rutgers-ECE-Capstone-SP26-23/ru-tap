@@ -3,20 +3,14 @@ const normalizedBaseUrl = appBaseUrl.endsWith("/") ? appBaseUrl : `${appBaseUrl}
 const normalizedBasePath = normalizedBaseUrl.replace(/\/+$/, "") || "/";
 
 export function withBasePath(path: string) {
-	if (path === "/") {
-		return normalizedBaseUrl;
-	}
-
-	return `${normalizedBaseUrl}${path.replace(/^\/+/, "")}`;
+	return path === "/" ? normalizedBaseUrl : `${normalizedBaseUrl}${path.replace(/^\/+/, "")}`;
 }
 
 export function normalizeAppPath(pathname: string) {
 	const trimmedPathname = pathname.replace(/\/+$/, "") || "/";
-
 	if (normalizedBasePath !== "/" && trimmedPathname.toLowerCase().startsWith(normalizedBasePath.toLowerCase())) {
 		const strippedPath = trimmedPathname.slice(normalizedBasePath.length) || "/";
 		return (strippedPath.startsWith("/") ? strippedPath : `/${strippedPath}`).toLowerCase();
 	}
-
 	return trimmedPathname.toLowerCase();
 }
