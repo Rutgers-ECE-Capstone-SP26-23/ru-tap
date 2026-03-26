@@ -404,6 +404,7 @@
 }
 
 .rooms-location-card {
+	align-items: start;
 	display: grid;
 	gap: 10px;
 }
@@ -467,16 +468,23 @@
 }
 
 .rooms-map-chooser {
+	align-self: start;
 	background: rgba(255, 255, 255, 0.03);
 	border: 1px solid rgba(255, 255, 255, 0.08);
 	border-radius: 14px;
 	color: inherit;
 	display: grid;
 	gap: 10px;
+	inset: auto;
 	margin: 0;
 	max-width: none;
 	padding: 12px;
+	position: static;
 	width: auto;
+}
+
+.rooms-map-chooser::backdrop {
+	display: none;
 }
 
 .rooms-map-chooser-label {
