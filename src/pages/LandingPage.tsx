@@ -53,6 +53,7 @@ const heroLinks = [
 
 const launchLinks = [
 	{ href: withBasePath("/transit"), label: "Open Transit", variant: "primary" },
+	{ href: withBasePath("/rooms"), label: "Open Rooms", variant: "secondary" },
 	{ href: withBasePath("/myrutgers"), label: "Open myRutgers", variant: "secondary" }
 ] as const;
 
@@ -106,13 +107,19 @@ export default function LandingPage() {
 			<SectionBlock
 				id="start"
 				title="Open the previews"
-				intro="Transit and academics are the first two live surfaces in the current RU Tap prototype."
+				intro="Transit, academics, and rooms are the first three live surfaces in the current RU Tap prototype."
 				headerClassName="section-head">
 				<div className="launch-grid">
 					<PanelCard title="Transit preview" className="accent-panel" as="div">
 						<p>
 							Open the Rutgers bus board to see live New Brunswick routes, next-stop predictions, and a
 							cleaner filtered route list.
+						</p>
+					</PanelCard>
+					<PanelCard title="Rooms preview" as="div">
+						<p>
+							Search classrooms by campus, building, and room code, then open the selected room’s details
+							and location.
 						</p>
 					</PanelCard>
 					<PanelCard title="myRutgers preview" as="div">

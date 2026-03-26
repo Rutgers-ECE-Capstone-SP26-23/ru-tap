@@ -3,6 +3,7 @@ import { normalizeAppPath } from "@/utils/basePath.ts";
 
 const LandingPage = lazy(() => import("@/pages/LandingPage.tsx"));
 const MyRutgersPage = lazy(() => import("@/pages/MyRutgersPage.tsx"));
+const RoomsPage = lazy(() => import("@/pages/RoomsPage.tsx"));
 const TransitPage = lazy(() => import("@/pages/TransitPage.tsx"));
 
 function App() {
@@ -11,6 +12,8 @@ function App() {
 
 	if (normalizedPath === "/myrutgers") {
 		Page = MyRutgersPage;
+	} else if (normalizedPath === "/rooms") {
+		Page = RoomsPage;
 	} else if (normalizedPath === "/transit") {
 		Page = TransitPage;
 	}

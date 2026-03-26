@@ -37,13 +37,14 @@ Last updated: 2026-03-25
 
 ## Current Route Coverage
 
-| Route / Surface | State                 | Current Implementation                                               | Notes                                                         |
-| --------------- | --------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `/`             | Implemented           | Landing page with RU Tap product framing and preview launch links    | Static product surface only                                   |
-| `/myrutgers`    | Implemented prototype | Academic service directory plus preview panel driven by fixture data | Integration framework only; no real Rutgers widget wiring yet |
-| `/transit`      | Implemented prototype | Live Rutgers transit board using the Passio feed                     | Most actively iterated surface in the repo right now          |
-| Maps / rooms    | Partially started     | Typed room dataset exists in `src/data/rooms.ts`                     | No page route or UI yet                                       |
-| Careers         | Not started           | No dedicated page route or data surface yet                          | Still conceptual only                                         |
+| Route / Surface | State                 | Current Implementation                                                 | Notes                                                                |
+| --------------- | --------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `/`             | Implemented           | Landing page with RU Tap product framing and preview launch links      | Static product surface only                                          |
+| `/myrutgers`    | Implemented prototype | Academic service directory plus preview panel driven by fixture data   | Integration framework only; no real Rutgers widget wiring yet        |
+| `/rooms`        | Implemented prototype | Classroom finder and room-detail directory driven by Rutgers room data | Finder/details UI only; no live indoor map or availability layer yet |
+| `/transit`      | Implemented prototype | Live Rutgers transit board using the Passio feed                       | Most actively iterated surface in the repo right now                 |
+| Maps / rooms    | Partially started     | Room finder page exists and is backed by `src/data/rooms.ts`           | Maps/wayfinding and live availability are still not implemented      |
+| Careers         | Not started           | No dedicated page route or data surface yet                            | Still conceptual only                                                |
 
 ## Runtime and Build Architecture
 
@@ -60,6 +61,7 @@ Last updated: 2026-03-25
 - `src/App.tsx` currently routes to:
     - `src/pages/LandingPage.tsx`
     - `src/pages/MyRutgersPage.tsx`
+    - `src/pages/RoomsPage.tsx`
     - `src/pages/TransitPage.tsx`
 - `Suspense` still uses `fallback={null}`, so route chunk loading still has a blank interim state.
 - `vite.config.ts` builds both:
@@ -111,6 +113,7 @@ Last updated: 2026-03-25
     - `src/types/content/pillar.ts`
 - Current preview launch state:
     - links to `/myrutgers`
+    - links to `/rooms`
     - links to `/transit`
 - Route-chunk status:
     - JS chunk emitted separately from the main shell
@@ -161,12 +164,14 @@ Last updated: 2026-03-25
     - `src/components/landing/`
     - `src/components/layout/`
     - `src/components/myRutgers/`
+    - `src/components/rooms/`
     - `src/components/transit/`
 - All moved component modules now use default exports.
 - Current folder split:
     - `landing/`: `ActionLinks`, `CoreExperienceCard`, `FloatingTopButton`
     - `layout/`: `PanelCard`, `SectionBlock`
     - `myRutgers/`: `ServiceButtonCard`, `ServiceButtonGrid`, `ServiceWidgetPanel`, `WidgetPlaceholder`
+    - `rooms/`: `RoomsDetailsPanel`, `RoomsDirectoryRow`, `RoomsDirectoryTable`, `RoomsMetricCard`, `RoomsSortButton`
     - `transit/`: `TransitBusCard`, `TransitMetricCard`, `TransitRouteButton`, `TransitRouteGroup`
 
 ## Transit Status
@@ -317,14 +322,43 @@ Last updated: 2026-03-25
 
 ## Maps and Rooms Status
 
-- There is no dedicated maps / rooms page route yet.
+- File: `src/pages/RoomsPage.tsx`
+- Active styles: `src/styles/pages/roomsPage.css`
+- Purpose: first-pass classroom finder / room detail surface for Rutgers New Brunswick
 - A typed room dataset now exists at `src/data/rooms.ts`.
 - `src/data/rooms.ts` currently provides:
     - `roomsByCampus` as the primary grouped structure
     - derived flat `rooms`
     - imports its room model types from `src/types/rooms/models/`
 - The dataset is grouped by campus rather than stored as one flat literal with repeated campus values.
-- This is data scaffolding only right now; there is no active UI surface consuming it yet.
+- The current page interaction model takes inspiration from Rutgers Digital Classroom Services classroom finder:
+    - searchable room directory
+    - campus filter chips
+    - selected-room details panel
+    - external map handoff for the selected room
+- Current page structure:
+    - `RoomsPage.tsx` now acts as the rooms stateful orchestration shell
+    - rooms-presentational subcomponents now live under `src/components/rooms/`
+- Current room finder behavior:
+    - route path: `/rooms`
+    - search matches room code, building, campus, seating, type, and address text
+    - selected room defaults to the first visible room in the filtered result set
+    - desktop layout uses a finder/details split view
+    - mobile layout stacks the details panel below the directory
+- Current room detail panel shows:
+    - room ID
+    - building
+    - campus
+    - room style
+    - seating
+    - capacity
+    - street address
+    - `Open in Maps` external link
+- Current gaps on the maps/rooms surface:
+    - no indoor map or floorplan layer
+    - no live room availability
+    - no pathfinding
+    - no building image/panorama layer
 
 ## Careers Status
 
@@ -342,6 +376,14 @@ Last updated: 2026-03-25
 - Shared landing/content types now live under `src/types/content/`.
 - Component prop types now live under `src/types/components/props/`.
 - Rooms model types now live under `src/types/rooms/models/`.
+- Rooms UI prop types now live under `src/types/rooms/props/`.
+- Rooms page-local types now currently live under `src/types/rooms/pages/`.
+- Current rooms type files include:
+    - model types in `src/types/rooms/models/`: `campusRoomRecord.ts`, `roomAddress.ts`, `roomCampus.ts`,
+      `roomCatalog.ts`, `roomCode.ts`, `roomListing.ts`, `roomRecord.ts`, `roomSeating.ts`, `roomType.ts`
+    - UI prop types in `src/types/rooms/props/`: `roomsDetailsPanelProps.ts`, `roomsDirectoryRowProps.ts`,
+      `roomsDirectoryTableProps.ts`, `roomsMetricCardProps.ts`, `roomsSortButtonProps.ts`
+    - page-local room types in `src/types/rooms/pages/`: `roomSortDirection.ts`, `roomSortKey.ts`
 - myRutgers model types now live under `src/types/myRutgers/models/`:
     - `myRutgersService.ts`
     - `myRutgersServiceStatus.ts`
@@ -387,6 +429,20 @@ Last updated: 2026-03-25
     - one site-wide install target only
     - no per-page manifests
     - no multi-page install setup
+
+## Brand Asset Snapshot
+
+- Live public install surfaces currently use:
+    - `public/favicon.svg`
+    - `public/manifest.webmanifest`
+    - `index.html`
+- Working icon assets currently exist under `src/assets/`:
+    - `favicon-new.svg`
+    - `favicon-new-still.svg`
+    - `favicon-new-still.png`
+    - `favicon-still.svg`
+    - `favicon-still.png`
+- The `favicon-new*` files are currently working assets and are not yet the live favicon/install surface.
 
 ## Service Worker Status
 
@@ -451,17 +507,19 @@ Current build artifact snapshot from the latest verified build:
 | Output                                   | Size      | Gzip     |
 | ---------------------------------------- | --------- | -------- |
 | `dist/index.html`                        | 0.99 kB   | 0.50 kB  |
-| `dist/assets/main-Dy08tWEJ.css`          | 1.64 kB   | 0.74 kB  |
-| `dist/assets/LandingPage-NC-bG56g.css`   | 4.01 kB   | 1.37 kB  |
-| `dist/assets/MyRutgersPage-BjKSSzqQ.css` | 4.19 kB   | 1.25 kB  |
-| `dist/assets/TransitPage-B7tawBiA.css`   | 9.39 kB   | 2.23 kB  |
+| `dist/assets/main-C72oqG2M.css`          | 1.78 kB   | 0.82 kB  |
+| `dist/assets/LandingPage-BJFbW4nE.css`   | 4.02 kB   | 1.37 kB  |
+| `dist/assets/MyRutgersPage-CWB6A2K3.css` | 4.17 kB   | 1.24 kB  |
+| `dist/assets/RoomsPage-BeSBIZNm.css`     | 7.29 kB   | 1.89 kB  |
+| `dist/assets/TransitPage-CC9c2vmc.css`   | 9.56 kB   | 2.26 kB  |
 | `dist/assets/basePath-DFIoE6gw.js`       | 0.35 kB   | 0.22 kB  |
 | `dist/assets/jsx-runtime-CGqjDhly.js`    | 0.44 kB   | 0.29 kB  |
 | `dist/sw.js`                             | 1.09 kB   | 0.58 kB  |
-| `dist/assets/MyRutgersPage-BMuKjSsh.js`  | 4.52 kB   | 1.45 kB  |
-| `dist/assets/LandingPage-CaGfKP32.js`    | 5.22 kB   | 2.07 kB  |
-| `dist/assets/TransitPage-DQoTZ41s.js`    | 21.33 kB  | 6.85 kB  |
-| `dist/assets/main-DOty22yD.js`           | 192.21 kB | 60.75 kB |
+| `dist/assets/MyRutgersPage-T7CzC6Pu.js`  | 4.52 kB   | 1.46 kB  |
+| `dist/assets/LandingPage-BVgGM73u.js`    | 5.48 kB   | 2.15 kB  |
+| `dist/assets/RoomsPage-BHS1Zn40.js`      | 17.41 kB  | 4.04 kB  |
+| `dist/assets/TransitPage-CsgP-iR3.js`    | 21.35 kB  | 6.85 kB  |
+| `dist/assets/main-Bo8ESS01.js`           | 192.37 kB | 60.81 kB |
 
 Testing status:
 
@@ -472,11 +530,9 @@ Testing status:
 
 - The worktree is currently dirty.
 - This includes active edits in:
-    - component folder layout under `src/components/`
-    - transit page logic and styling
-    - myRutgers-related components and data
-    - service worker and base-path utilities
-    - the split type-folder layout under `src/types/`
+    - transit page logic
+    - working favicon assets under `src/assets/`
+    - documentation (`AGENTS.md` and `STATUS.md`)
 - `STATUS.md` itself is also modified by this update.
 
 ## Known Gaps and Constraints
@@ -505,10 +561,12 @@ Testing status:
 | `src/utils/basePath.ts`                         | Base-aware path generation and pathname normalization                                   |
 | `src/pages/LandingPage.tsx`                     | RU Tap landing page content and section composition                                     |
 | `src/pages/MyRutgersPage.tsx`                   | myRutgers page state, layout, and service selection                                     |
+| `src/pages/RoomsPage.tsx`                       | Room finder state, filtering, sorting, and top-level composition                        |
 | `src/pages/TransitPage.tsx`                     | Transit page state, route selection, mobile/desktop behavior, and top-level composition |
 | `src/components/landing/*`                      | Landing-page-specific reusable UI pieces                                                |
 | `src/components/layout/*`                       | Shared structural card/section building blocks                                          |
 | `src/components/myRutgers/*`                    | myRutgers selector and preview-panel components                                         |
+| `src/components/rooms/*`                        | Rooms-presentational UI components used by `RoomsPage.tsx`                              |
 | `src/components/transit/*`                      | Transit-presentational UI components used by `TransitPage.tsx`                          |
 | `src/data/myRutgersServices.ts`                 | Fixture metadata for academic services                                                  |
 | `src/data/transit.ts`                           | Rutgers transit feed fetch, filtering, normalization, and snapshot merging              |
@@ -519,7 +577,9 @@ Testing status:
 | `src/hooks/transit/useTransitSnapshot.ts`       | Transit snapshot loading, refresh cadence, and manual refresh handling                  |
 | `src/types/content/*`                           | Landing/content-facing shared types                                                     |
 | `src/types/components/props/*`                  | Component prop types extracted from component modules                                   |
-| `src/types/rooms/models/*`                      | Rooms domain model types used by `src/data/rooms.ts`                                    |
+| `src/types/rooms/models/*`                      | Rooms domain model types used by `src/data/rooms.ts` and the rooms page                 |
+| `src/types/rooms/props/*`                       | Rooms UI prop types                                                                     |
+| `src/types/rooms/pages/*`                       | Rooms page-local sort types                                                             |
 | `src/types/myRutgers/models/*`                  | myRutgers enums and service model types                                                 |
 | `src/types/transit/feed/*`                      | Passio feed-shape types                                                                 |
 | `src/types/transit/hooks/*`                     | Transit hook parameter types                                                            |
@@ -532,9 +592,13 @@ Testing status:
 | `src/types/serviceWorker/globals/*`             | Service-worker global-scope typing helpers                                              |
 | `src/types/serviceWorker/events/*`              | Service-worker event types                                                              |
 | `src/sw.ts`                                     | Service-worker runtime logic                                                            |
+| `src/assets/favicon-new.svg`                    | Working animated favicon redesign asset                                                 |
+| `src/assets/favicon-new-still.svg`              | Static 1-second SVG snapshot of the working favicon redesign                            |
+| `src/assets/favicon-new-still.png`              | 4096x4096 PNG export of the working favicon redesign still                              |
 | `src/styles/global/index.css`                   | Active global styling entry                                                             |
 | `src/styles/pages/landingPage.css`              | Landing page styling                                                                    |
 | `src/styles/pages/myRutgersPage.css`            | myRutgers page styling                                                                  |
+| `src/styles/pages/roomsPage.css`                | Room finder page styling                                                                |
 | `src/styles/pages/transitPage.css`              | Transit page styling                                                                    |
 | `src/styles/components/*`                       | Component-specific stylesheets                                                          |
 | `public/manifest.webmanifest`                   | Install metadata                                                                        |
@@ -550,6 +614,7 @@ satisfactory point for now.
 High-signal next steps currently visible in the repo:
 
 - add an actual maps / rooms surface on top of `src/data/rooms.ts`
+- deepen the rooms surface with indoor maps, floorplans, availability, or wayfinding
 - add a careers surface
 - deepen transit with a map, stop search, favorites, or rideshare integration
 - replace myRutgers placeholders with real preview widgets when product scope allows

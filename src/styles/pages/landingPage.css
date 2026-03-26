@@ -1,6 +1,7 @@
 .landing-page {
 	--surface-accent: #fff2f5;
-	background: linear-gradient(180deg, rgba(204, 0, 51, 0.09) 0%, rgba(204, 0, 51, 0) 260px);
+	background: var(--page-backdrop);
+	min-height: 100svh;
 	--surface-bg: white;
 	--surface-muted: #f6f8fb;
 	text-align: left;
@@ -97,6 +98,10 @@
 	}
 
 	.pillar-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.launch-grid {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 }

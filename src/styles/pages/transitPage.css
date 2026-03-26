@@ -1,7 +1,5 @@
 .transit-page {
-	background:
-		radial-gradient(circle at top right, rgba(204, 0, 51, 0.2), transparent 34%),
-		linear-gradient(180deg, rgba(204, 0, 51, 0.12) 0%, rgba(204, 0, 51, 0) 260px);
+	background: var(--page-backdrop);
 	min-height: 100svh;
 	padding: 24px 20px 40px;
 }

@@ -65,6 +65,28 @@ export default function TransitPage() {
 		isAutoCollapsingActiveRoutes
 	});
 	const inactiveRouteMetaLabel = `${inactiveRoutes.length} route${inactiveRoutes.length === 1 ? "" : "s"}`;
+	let activeRoutePeekContent = null;
+
+	if (hasCollapsedActiveRoutePeek) {
+		activeRoutePeekContent = (
+			<div className="transit-route-list">
+				{peekRouteButtons.map(route => (
+					<TransitRouteButton
+						key={route.id}
+						route={route}
+						isSelected={route.id === selectedRouteId}
+						onSelect={handleRouteSelection}
+					/>
+				))}
+			</div>
+		);
+	} else if (showLocatingActiveRoutePeekNote) {
+		activeRoutePeekContent = <p className="transit-route-group-note">Finding nearby routes...</p>;
+	} else if (showLocationUnavailableActiveRoutePeekNote) {
+		activeRoutePeekContent = (
+			<p className="transit-route-group-note">Location unavailable. Expand to browse all routes.</p>
+		);
+	}
 
 	const handleManualRefresh = async () => await refreshNow();
 
@@ -161,26 +183,7 @@ export default function TransitPage() {
 									showLocatingActiveRoutePeekNote ||
 									showLocationUnavailableActiveRoutePeekNote
 								}
-								peekChildren={
-									hasCollapsedActiveRoutePeek ? (
-										<div className="transit-route-list">
-											{peekRouteButtons.map(route => (
-												<TransitRouteButton
-													key={route.id}
-													route={route}
-													isSelected={route.id === selectedRouteId}
-													onSelect={handleRouteSelection}
-												/>
-											))}
-										</div>
-									) : showLocatingActiveRoutePeekNote ? (
-										<p className="transit-route-group-note">Finding nearby routes...</p>
-									) : showLocationUnavailableActiveRoutePeekNote ? (
-										<p className="transit-route-group-note">
-											Location unavailable. Expand to browse all routes.
-										</p>
-									) : null
-								}
+								peekChildren={activeRoutePeekContent}
 								onToggle={() => handleToggleActiveRoutes(hasCollapsedActiveRoutePeek)}>
 								<div className="transit-route-list">
 									{expandedRouteButtons.map(route => (
