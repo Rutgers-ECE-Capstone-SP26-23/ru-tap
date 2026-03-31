@@ -17,18 +17,15 @@ export default function SectionBlock({
 	const innerClassName = ["content-wrap", contentClassName].filter(Boolean).join(" ");
 	let headerContent: ReactNode = null;
 
-	if (title || intro) {
+	if (title || intro)
 		headerContent = (
 			<>
 				{title ? <h2>{title}</h2> : null}
 				{intro ? <p>{intro}</p> : null}
 			</>
 		);
-	}
 
-	if (headerContent && headerClassName) {
-		headerContent = <div className={headerClassName}>{headerContent}</div>;
-	}
+	if (headerContent && headerClassName) headerContent = <div className={headerClassName}>{headerContent}</div>;
 
 	return (
 		<Tag id={id} className={sectionClassName}>

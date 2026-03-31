@@ -12,9 +12,8 @@ export default function TransitRouteGroup({
 }: TransitRouteGroupProps) {
 	let panelClassName = "transit-route-group-panel";
 
-	if (hasVisibleContent) {
+	if (hasVisibleContent)
 		panelClassName = isExpanded ? "transit-route-group-panel expanded" : "transit-route-group-panel visible";
-	}
 
 	const chevronClassName = isExpanded ? "transit-route-group-chevron expanded" : "transit-route-group-chevron";
 

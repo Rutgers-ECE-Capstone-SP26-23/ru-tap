@@ -16,17 +16,11 @@ function getBoardRefreshSnapshot(
 	nextSnapshot: TransitSnapshot,
 	selectedRouteId: string | null
 ) {
-	if (!currentSnapshot) {
-		return nextSnapshot;
-	}
+	if (!currentSnapshot) return nextSnapshot;
 
 	const routeIdsToUpdate = new Set<string>();
 
-	for (const route of nextSnapshot.routes) {
-		if (route.id !== selectedRouteId) {
-			routeIdsToUpdate.add(route.id);
-		}
-	}
+	for (const route of nextSnapshot.routes) if (route.id !== selectedRouteId) routeIdsToUpdate.add(route.id);
 
 	return mergeTransitSnapshots(currentSnapshot, nextSnapshot, routeIdsToUpdate, {
 		updatedAt: nextSnapshot.updatedAt,
@@ -40,11 +34,9 @@ function getSelectedRouteRefreshSnapshot(
 	nextSnapshot: TransitSnapshot,
 	selectedRouteId: string
 ) {
-	if (!currentSnapshot) {
-		return nextSnapshot;
-	}
-
-	return mergeTransitSnapshots(currentSnapshot, nextSnapshot, new Set([selectedRouteId]));
+	return currentSnapshot
+		? mergeTransitSnapshots(currentSnapshot, nextSnapshot, new Set([selectedRouteId]))
+		: nextSnapshot;
 }
 
 export default function useTransitSnapshot(selectedRouteId: string | null) {
@@ -74,9 +66,7 @@ export default function useTransitSnapshot(selectedRouteId: string | null) {
 			try {
 				const nextSnapshot = await fetchTransitSnapshot(abortController.signal);
 
-				if (isDisposed) {
-					return;
-				}
+				if (isDisposed) return;
 
 				commitSnapshot(nextSnapshot);
 				setError(null);
@@ -86,15 +76,11 @@ export default function useTransitSnapshot(selectedRouteId: string | null) {
 					setBoardClockAnchorMs(Date.now());
 				}
 			} catch (caughtError) {
-				if (isDisposed || abortController.signal.aborted) {
-					return;
-				}
+				if (isDisposed || abortController.signal.aborted) return;
 
 				setError(getTransitErrorMessage(caughtError));
 			} finally {
-				if (!isDisposed) {
-					setIsLoading(false);
-				}
+				if (!isDisposed) setIsLoading(false);
 			}
 		};
 
@@ -107,9 +93,7 @@ export default function useTransitSnapshot(selectedRouteId: string | null) {
 	}, []);
 
 	useEffect(() => {
-		if (boardClockAnchorMs === null) {
-			return;
-		}
+		if (boardClockAnchorMs === null) return;
 
 		const refreshBoardSnapshot = async () => {
 			const requestVersion = boardRefreshVersionRef.current + 1;
@@ -118,9 +102,7 @@ export default function useTransitSnapshot(selectedRouteId: string | null) {
 			try {
 				const nextSnapshot = await fetchTransitSnapshot();
 
-				if (boardRefreshVersionRef.current !== requestVersion) {
-					return;
-				}
+				if (boardRefreshVersionRef.current !== requestVersion) return;
 
 				const mergedSnapshot = getBoardRefreshSnapshot(
 					snapshotRef.current,
@@ -140,16 +122,12 @@ export default function useTransitSnapshot(selectedRouteId: string | null) {
 	}, [boardClockAnchorMs]);
 
 	useEffect(() => {
-		if (boardClockAnchorMs === null || !selectedRouteId) {
-			return;
-		}
+		if (boardClockAnchorMs === null || !selectedRouteId) return;
 
 		const refreshSelectedRoute = async () => {
 			const activeSelectedRouteId = selectedRouteIdRef.current;
 
-			if (!activeSelectedRouteId) {
-				return;
-			}
+			if (!activeSelectedRouteId) return;
 
 			const requestVersion = selectedRefreshVersionRef.current + 1;
 			selectedRefreshVersionRef.current = requestVersion;
@@ -160,9 +138,8 @@ export default function useTransitSnapshot(selectedRouteId: string | null) {
 				if (
 					selectedRefreshVersionRef.current !== requestVersion ||
 					selectedRouteIdRef.current !== activeSelectedRouteId
-				) {
+				)
 					return;
-				}
 
 				const mergedSnapshot = getSelectedRouteRefreshSnapshot(
 					snapshotRef.current,
@@ -195,9 +172,7 @@ export default function useTransitSnapshot(selectedRouteId: string | null) {
 		try {
 			const nextSnapshot = await fetchTransitSnapshot();
 
-			if (boardRefreshVersionRef.current !== requestVersion) {
-				return;
-			}
+			if (boardRefreshVersionRef.current !== requestVersion) return;
 
 			commitSnapshot(nextSnapshot);
 			setError(null);

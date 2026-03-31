@@ -22,11 +22,11 @@ const roomListings: readonly RoomListing[] = campusOrder.flatMap(campus => {
 });
 
 const totalBuildings = new Set(roomListings.map(room => room.building)).size;
-const largestRoom = roomListings.reduce<RoomListing | null>((largestRoomSoFar, currentRoom) => {
-	return largestRoomSoFar === null || currentRoom.capacity > largestRoomSoFar.capacity
-		? currentRoom
-		: largestRoomSoFar;
-}, null);
+const largestRoom = roomListings.reduce<RoomListing | null>(
+	(largestRoomSoFar, currentRoom) =>
+		largestRoomSoFar === null || currentRoom.capacity > largestRoomSoFar.capacity ? currentRoom : largestRoomSoFar,
+	null
+);
 const stringCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
 function matchesRoomQuery(room: RoomListing, normalizedQuery: string) {

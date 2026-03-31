@@ -3,7 +3,7 @@ import "@/styles/components/ServiceWidgetPanel.css";
 import type ServiceWidgetPanelProps from "@/types/components/props/serviceWidgetPanelProps.ts";
 
 export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps) {
-	if (!service) {
+	if (!service)
 		return (
 			<section className="widget-panel" aria-label="Selected widget panel">
 				<div className="widget-panel-empty">
@@ -13,7 +13,6 @@ export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps)
 				</div>
 			</section>
 		);
-	}
 
 	const widgetStatusClassName = service.status === "ready" ? "widget-status ready" : "widget-status planned";
 

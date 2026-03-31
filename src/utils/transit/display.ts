@@ -16,15 +16,8 @@ export function formatShortTime(value: string | number) {
 
 export function formatEta(etaMs: number) {
 	const minutesUntilArrival = Math.max(0, Math.round((etaMs - Date.now()) / 60_000));
-
-	if (minutesUntilArrival <= 0) {
-		return "Due";
-	}
-
-	if (minutesUntilArrival === 1) {
-		return "1 min";
-	}
-
+	if (minutesUntilArrival <= 0) return "Due";
+	if (minutesUntilArrival === 1) return "1 min";
 	return `${minutesUntilArrival} min`;
 }
 

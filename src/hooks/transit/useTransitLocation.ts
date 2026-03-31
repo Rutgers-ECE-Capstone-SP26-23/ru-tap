@@ -21,25 +21,19 @@ export default function useTransitLocation(isMobileDevice: boolean) {
 	const hasRequestedLocationRef = useRef(false);
 
 	useEffect(() => {
-		if (!isMobileDevice || hasRequestedLocationRef.current) {
-			return;
-		}
+		if (!isMobileDevice || hasRequestedLocationRef.current) return;
 
 		hasRequestedLocationRef.current = true;
 		let isDisposed = false;
 		const resolutionTimeoutId = globalThis.setTimeout(() => {
-			if (isDisposed) {
-				return;
-			}
+			if (isDisposed) return;
 
 			setIsResolvingLocation(false);
 			setLocationState(null);
 		}, LOCATION_RESOLUTION_TIMEOUT_MS);
 
 		const commitLocation = (position: GeolocationPosition, precision: TransitLocationState["precision"]) => {
-			if (isDisposed) {
-				return;
-			}
+			if (isDisposed) return;
 
 			globalThis.clearTimeout(resolutionTimeoutId);
 			setLocationState({

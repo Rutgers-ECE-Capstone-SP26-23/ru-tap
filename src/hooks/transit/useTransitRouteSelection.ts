@@ -61,43 +61,29 @@ export default function useTransitRouteSelection({
 			setHideSuggestedActiveRoutes(false);
 		});
 
-		return () => {
-			globalThis.cancelAnimationFrame(animationFrameId);
-		};
+		return () => globalThis.cancelAnimationFrame(animationFrameId);
 	}, [isMobileDevice]);
 
 	useEffect(() => {
-		if (!hasSnapshot) {
-			return;
-		}
+		if (!hasSnapshot) return;
 
-		if (!closingRouteId || availableRoutes.some(route => route.id === closingRouteId)) {
-			return;
-		}
+		if (!closingRouteId || availableRoutes.some(route => route.id === closingRouteId)) return;
 
-		const animationFrameId = globalThis.requestAnimationFrame(() => {
-			setClosingRouteId(null);
-		});
+		const animationFrameId = globalThis.requestAnimationFrame(() => setClosingRouteId(null));
 
-		return () => {
-			globalThis.cancelAnimationFrame(animationFrameId);
-		};
+		return () => globalThis.cancelAnimationFrame(animationFrameId);
 	}, [availableRoutes, closingRouteId, hasSnapshot]);
 
 	useEffect(() => {
-		if (!hasSnapshot) {
-			return;
-		}
+		if (!hasSnapshot) return;
 
-		const animationFrameId = globalThis.requestAnimationFrame(() => {
+		const animationFrameId = globalThis.requestAnimationFrame(() =>
 			setSelectedRouteId(currentSelectedRouteId =>
 				resolveSelectedRouteId(currentSelectedRouteId, availableRoutes)
-			);
-		});
+			)
+		);
 
-		return () => {
-			globalThis.cancelAnimationFrame(animationFrameId);
-		};
+		return () => globalThis.cancelAnimationFrame(animationFrameId);
 	}, [availableRoutes, hasSnapshot, setSelectedRouteId]);
 
 	const handleRouteSelection = (routeId: string) => {
@@ -114,18 +100,14 @@ export default function useTransitRouteSelection({
 				setIsAutoCollapsingActiveRoutes(false);
 				activeRouteCollapseTimerRef.current = null;
 			}, ACTIVE_ROUTE_AUTO_COLLAPSE_DURATION_MS);
-		} else {
-			setIsAutoCollapsingActiveRoutes(false);
-		}
+		} else setIsAutoCollapsingActiveRoutes(false);
 
 		setClosingRouteId(null);
 		setSelectedRouteId(routeId);
 	};
 
 	const handleMinimizeRoute = () => {
-		if (!selectedRouteId) {
-			return;
-		}
+		if (!selectedRouteId) return;
 
 		clearClosePanelTimer();
 		clearActiveRouteCollapseTimer();
@@ -144,9 +126,7 @@ export default function useTransitRouteSelection({
 
 		if (showAllActiveRoutes) {
 			setShowAllActiveRoutes(false);
-			if (isMobileDevice && !selectedRouteId) {
-				setHideSuggestedActiveRoutes(true);
-			}
+			if (isMobileDevice && !selectedRouteId) setHideSuggestedActiveRoutes(true);
 			return;
 		}
 
@@ -163,9 +143,7 @@ export default function useTransitRouteSelection({
 		const previousSelectedRouteId = previousSelectedRouteIdRef.current;
 		previousSelectedRouteIdRef.current = selectedRouteId;
 
-		if (!isMobileDevice || !selectedRouteId || previousSelectedRouteId === selectedRouteId) {
-			return;
-		}
+		if (!isMobileDevice || !selectedRouteId || previousSelectedRouteId === selectedRouteId) return;
 
 		const prefersReducedMotion = globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
 		const scrollDelayMs = prefersReducedMotion ? 0 : routeDetailsScrollDelayRef.current;
@@ -173,9 +151,7 @@ export default function useTransitRouteSelection({
 		const scrollToRouteDetails = () => {
 			const routeDetailsTop = routeDetailsRef.current?.getBoundingClientRect().top;
 
-			if (routeDetailsTop === undefined) {
-				return;
-			}
+			if (routeDetailsTop === undefined) return;
 
 			globalThis.scrollTo({
 				top: Math.max(0, globalThis.scrollY + routeDetailsTop - 16),
@@ -195,9 +171,7 @@ export default function useTransitRouteSelection({
 
 		return () => {
 			globalThis.cancelAnimationFrame(animationFrameId);
-			if (scrollTimeoutId !== null) {
-				globalThis.clearTimeout(scrollTimeoutId);
-			}
+			if (scrollTimeoutId !== null) globalThis.clearTimeout(scrollTimeoutId);
 		};
 	}, [isMobileDevice, selectedRouteId]);
 

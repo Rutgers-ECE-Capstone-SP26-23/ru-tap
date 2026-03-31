@@ -29,13 +29,8 @@ function getNearestTransitStop(
 ): TransitStop | null {
 	const uniqueStops = new Map<string, TransitStop>();
 
-	for (const route of routes) {
-		for (const stop of route.stops) {
-			if (!uniqueStops.has(stop.id)) {
-				uniqueStops.set(stop.id, stop);
-			}
-		}
-	}
+	for (const route of routes)
+		for (const stop of route.stops) if (!uniqueStops.has(stop.id)) uniqueStops.set(stop.id, stop);
 
 	let nearestStop: TransitStop | null = null;
 	let nearestDistance = Number.POSITIVE_INFINITY;
@@ -73,11 +68,9 @@ function getRouteCountLabel(routeCount: number) {
 }
 
 function getActiveRouteMetaLabel(totalRouteCount: number, visibleRouteCount: number, isExpanded: boolean) {
-	if (isExpanded || visibleRouteCount === 0 || visibleRouteCount === totalRouteCount) {
-		return getRouteCountLabel(totalRouteCount);
-	}
-
-	return `${visibleRouteCount} shown · ${getRouteCountLabel(totalRouteCount)}`;
+	return isExpanded || visibleRouteCount === 0 || visibleRouteCount === totalRouteCount
+		? getRouteCountLabel(totalRouteCount)
+		: `${visibleRouteCount} shown · ${getRouteCountLabel(totalRouteCount)}`;
 }
 
 function getLayoutClassName(isWideDesktop: boolean, hasSelectedRoute: boolean) {
@@ -130,21 +123,12 @@ export default function getTransitBoardViewState({
 	const nearestStopRouteIds = new Set<string>();
 	const campusRouteIds = new Set<string>();
 
-	if (nearestStop) {
-		for (const route of activeRoutes) {
-			if (route.stops.some(stop => stop.id === nearestStop.id)) {
-				nearestStopRouteIds.add(route.id);
-			}
-		}
-	}
+	if (nearestStop)
+		for (const route of activeRoutes)
+			if (route.stops.some(stop => stop.id === nearestStop.id)) nearestStopRouteIds.add(route.id);
 
-	if (userCampus) {
-		for (const route of activeRoutes) {
-			if (route.campuses.includes(userCampus)) {
-				campusRouteIds.add(route.id);
-			}
-		}
-	}
+	if (userCampus)
+		for (const route of activeRoutes) if (route.campuses.includes(userCampus)) campusRouteIds.add(route.id);
 
 	const orderedActiveRoutes =
 		isMobileDevice && !selectedRouteId && nearestStopRouteIds.size > 0
@@ -153,17 +137,13 @@ export default function getTransitBoardViewState({
 	const collapsedActiveRouteIds = new Set<string>();
 	const activeRouteIds = new Set(activeRoutes.map(route => route.id));
 
-	if (displayedRoute && activeRouteIds.has(displayedRoute.id)) {
-		collapsedActiveRouteIds.add(displayedRoute.id);
-	}
+	if (displayedRoute && activeRouteIds.has(displayedRoute.id)) collapsedActiveRouteIds.add(displayedRoute.id);
 
 	if (isMobileDevice && !selectedRouteId && !hideSuggestedActiveRoutes) {
 		const contextualRouteIds =
 			locationState?.precision === "fine" && nearestStopRouteIds.size > 0 ? nearestStopRouteIds : campusRouteIds;
 
-		for (const routeId of contextualRouteIds) {
-			collapsedActiveRouteIds.add(routeId);
-		}
+		for (const routeId of contextualRouteIds) collapsedActiveRouteIds.add(routeId);
 	}
 
 	const visibleActiveRoutes = showAllActiveRoutes

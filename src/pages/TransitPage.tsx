@@ -67,7 +67,7 @@ export default function TransitPage() {
 	const inactiveRouteMetaLabel = `${inactiveRoutes.length} route${inactiveRoutes.length === 1 ? "" : "s"}`;
 	let activeRoutePeekContent = null;
 
-	if (hasCollapsedActiveRoutePeek) {
+	if (hasCollapsedActiveRoutePeek)
 		activeRoutePeekContent = (
 			<div className="transit-route-list">
 				{peekRouteButtons.map(route => (
@@ -80,13 +80,12 @@ export default function TransitPage() {
 				))}
 			</div>
 		);
-	} else if (showLocatingActiveRoutePeekNote) {
+	else if (showLocatingActiveRoutePeekNote)
 		activeRoutePeekContent = <p className="transit-route-group-note">Finding nearby routes...</p>;
-	} else if (showLocationUnavailableActiveRoutePeekNote) {
+	else if (showLocationUnavailableActiveRoutePeekNote)
 		activeRoutePeekContent = (
 			<p className="transit-route-group-note">Location unavailable. Expand to browse all routes.</p>
 		);
-	}
 
 	const handleManualRefresh = async () => await refreshNow();
 

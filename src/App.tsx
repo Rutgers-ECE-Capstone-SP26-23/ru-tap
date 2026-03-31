@@ -10,13 +10,9 @@ function App() {
 	const normalizedPath = normalizeAppPath(globalThis.location.pathname);
 	let Page = LandingPage;
 
-	if (normalizedPath === "/myrutgers") {
-		Page = MyRutgersPage;
-	} else if (normalizedPath === "/rooms") {
-		Page = RoomsPage;
-	} else if (normalizedPath === "/transit") {
-		Page = TransitPage;
-	}
+	if (normalizedPath === "/myrutgers") Page = MyRutgersPage;
+	else if (normalizedPath === "/rooms") Page = RoomsPage;
+	else if (normalizedPath === "/transit") Page = TransitPage;
 
 	return (
 		<Suspense fallback={null}>
