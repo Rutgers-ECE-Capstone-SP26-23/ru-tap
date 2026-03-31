@@ -3,7 +3,7 @@
 This file is the living snapshot of the repo as it exists right now. Update it when routes, architecture, assets,
 verification status, product scope, or active backlog meaningfully change.
 
-Last updated: 2026-03-25
+Last updated: 2026-03-31T02:27:10.4805497-04:00
 
 ## Project Snapshot
 
@@ -80,6 +80,13 @@ Last updated: 2026-03-25
     - builds `dist`
     - adds `404.html` for SPA fallback
     - deploys with the standard GitHub Pages actions
+- Pages workflow Node runtime migration status (2026-03-31):
+    - upgraded to `actions/checkout@v6` (`node24`)
+    - upgraded to `actions/setup-node@v6` (`node24`)
+    - upgraded to `actions/configure-pages@v6` (`node24`)
+    - replaced `actions/upload-pages-artifact` with explicit tar creation + `actions/upload-artifact@v6`
+    - upgraded to `actions/deploy-pages@v5` (`node24`)
+    - set workflow env `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` to force transitive JavaScript actions to Node 24
 - `vite.config.ts` computes the Vite `base` automatically for project-site Pages builds.
 - `src/utils/basePath.ts` centralizes:
     - `withBasePath(...)`
