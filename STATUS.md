@@ -3,7 +3,7 @@
 This file is the living snapshot of the repo as it exists right now. Update it when routes, architecture, assets,
 verification status, product scope, or active backlog meaningfully change.
 
-Last updated: 2026-03-31T02:27:10.4805497-04:00
+Last updated: 2026-03-31T02:46:55.4101374-04:00
 
 ## Project Snapshot
 
