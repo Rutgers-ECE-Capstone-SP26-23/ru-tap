@@ -6,6 +6,7 @@ type RoomType =
 	| "Lecture Hall"
 	| "Seminar Classroom"
 	| "Seminar Room"
-	| "Small Classroom";
+	| "Small Classroom"
+	| "Study Room";
 
 export type { RoomType as default };
