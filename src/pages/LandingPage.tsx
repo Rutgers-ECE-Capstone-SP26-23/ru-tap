@@ -1,17 +1,23 @@
-import ActionLinks from "@/components/landing/ActionLinks.tsx";
-import CoreExperienceCard from "@/components/landing/CoreExperienceCard.tsx";
 import FloatingTopButton from "@/components/landing/FloatingTopButton.tsx";
 import PanelCard from "@/components/layout/PanelCard.tsx";
 import SectionBlock from "@/components/layout/SectionBlock.tsx";
 import "@/styles/pages/landingPage.css";
-import type DomainCard from "@/types/content/domainCard.ts";
 import type Pillar from "@/types/content/pillar.ts";
 import { withBasePath } from "@/utils/basePath.ts";
+import scrollPageToTop from "@/utils/scrollToTop.ts";
+
+type CoreExperienceCard = Readonly<{
+	cta: string;
+	description: string;
+	href: string;
+	highlight: string;
+	title: string;
+}>;
 
 const pillars: readonly Pillar[] = [
 	{
 		title: "See what matters next",
-		description: "Move from classes to commuting to career steps without losing context between tools."
+		description: "Move from classes to commuting to room details without losing context between tools."
 	},
 	{
 		title: "Move faster through the day",
@@ -23,47 +29,34 @@ const pillars: readonly Pillar[] = [
 	}
 ];
 
-const domains: readonly DomainCard[] = [
+const coreExperienceCards: readonly CoreExperienceCard[] = [
 	{
 		title: "Academics",
-		description: "Keep schedules, grades, holds, and registration details close at hand.",
-		highlight: "Know what matters before your next class or deadline."
+		description:
+			"Search courses, compare planning tools, and keep the next Rutgers registration step close at hand.",
+		href: withBasePath("/myrutgers"),
+		highlight: "Know what matters before your next class or deadline.",
+		cta: "Open myRutgers"
 	},
 	{
-		title: "Transit and Rideshare",
-		description: "Check buses, route options, and alternatives before you head out.",
-		highlight: "Get moving without guessing what the trip looks like."
+		title: "Transit and rideshare",
+		description: "See which Rutgers buses are moving, pick a route, and check the next stop before you head out.",
+		href: withBasePath("/transit"),
+		highlight: "Get moving without guessing what the trip looks like.",
+		cta: "Open Transit Board"
 	},
 	{
-		title: "Maps and Rooms",
-		description: "Find buildings, rooms, and nearby spaces faster across campus.",
-		highlight: "Spend less time orienting yourself and more time getting there."
-	},
-	{
-		title: "Careers",
-		description: "Keep internships, jobs, and events visible alongside the rest of your Rutgers day.",
-		highlight: "Make opportunities easier to act on while everything else is happening."
+		title: "Maps and rooms",
+		description:
+			"Look up classrooms by campus, building, or room code and pull up the details you need before class.",
+		href: withBasePath("/rooms"),
+		highlight: "Spend less time orienting yourself and more time getting there.",
+		cta: "Open Room Finder"
 	}
-];
-
-const heroLinks = [
-	{ href: withBasePath("/myrutgers"), label: "Open myRutgers", variant: "primary" },
-	{ href: "#domains", label: "Explore Features", variant: "secondary" }
-] as const;
-
-const launchLinks = [
-	{ href: withBasePath("/transit"), label: "Open Transit", variant: "primary" },
-	{ href: withBasePath("/rooms"), label: "Open Rooms", variant: "secondary" },
-	{ href: withBasePath("/myrutgers"), label: "Open myRutgers", variant: "secondary" }
 ] as const;
 
 export default function LandingPage() {
 	const currentYear = new Date().getFullYear();
-
-	const handleScrollToTop = () => {
-		const prefersReducedMotion = globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
-		globalThis.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
-	};
 
 	return (
 		<div className="landing-page">
@@ -71,14 +64,11 @@ export default function LandingPage() {
 				<div className="content-wrap">
 					<p className="wordmark">RU Tap · Rutgers New Brunswick</p>
 					<h1>One place for your Rutgers day.</h1>
-					<p className="hero-subtext">
-						RU Tap brings academics, transit, maps, and careers into one cleaner flow.
-					</p>
+					<p className="hero-subtext">RU Tap brings academics, transit, and maps into one cleaner flow.</p>
 					<p className="hero-detail">
 						Check what matters next, move faster between commitments, and spend less time stitching together
 						disconnected Rutgers tools.
 					</p>
-					<ActionLinks links={heroLinks} />
 				</div>
 			</header>
 
@@ -93,43 +83,27 @@ export default function LandingPage() {
 			</SectionBlock>
 
 			<SectionBlock
-				id="domains"
-				title="Core Experiences"
-				intro="RU Tap is designed to keep the most common Rutgers workflows in one consistent product experience."
+				id="start"
+				title="Core experiences"
+				intro="Academics, transit, and room search are ready whenever you need them."
 				headerClassName="section-head">
-				<div className="domain-grid">
-					{domains.map(domain => (
-						<CoreExperienceCard key={domain.title} {...domain} />
+				<div className="pillar-grid">
+					{coreExperienceCards.map(card => (
+						<a key={card.title} className="landing-core-card-link" href={card.href}>
+							<PanelCard title={card.title} className="landing-core-card">
+								<p>
+									{card.description}
+									<br />
+									<br />
+									{card.highlight}
+									<br />
+									<br />
+									<span className="landing-core-card-accent">{card.cta}</span>
+								</p>
+							</PanelCard>
+						</a>
 					))}
 				</div>
-			</SectionBlock>
-
-			<SectionBlock
-				id="start"
-				title="Open the previews"
-				intro="Transit, academics, and rooms are the first three live surfaces in the current RU Tap prototype."
-				headerClassName="section-head">
-				<div className="launch-grid">
-					<PanelCard title="Transit preview" className="accent-panel" as="div">
-						<p>
-							Open the Rutgers bus board to see live New Brunswick routes, next-stop predictions, and a
-							cleaner filtered route list.
-						</p>
-					</PanelCard>
-					<PanelCard title="Rooms preview" as="div">
-						<p>
-							Search classrooms by campus, building, and room code, then open the selected room’s details
-							and location.
-						</p>
-					</PanelCard>
-					<PanelCard title="myRutgers preview" as="div">
-						<p>
-							Open the academic preview to browse schedules, grades, holds, registration, and
-							announcements in the same RU Tap flow.
-						</p>
-					</PanelCard>
-				</div>
-				<ActionLinks links={launchLinks} />
 			</SectionBlock>
 
 			<SectionBlock as="footer" className="footer-cta" title="RU Tap is in active development.">
@@ -139,7 +113,7 @@ export default function LandingPage() {
 				</p>
 			</SectionBlock>
 
-			<FloatingTopButton onClick={handleScrollToTop} />
+			<FloatingTopButton onClick={scrollPageToTop} />
 		</div>
 	);
 }
