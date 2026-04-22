@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FloatingTopButton from "@/components/landing/FloatingTopButton.tsx";
 import TransitBusCard from "@/components/transit/TransitBusCard.tsx";
 import TransitMetricCard from "@/components/transit/TransitMetricCard.tsx";
 import TransitRouteButton from "@/components/transit/TransitRouteButton.tsx";
@@ -8,6 +9,7 @@ import useTransitLocation from "@/hooks/transit/useTransitLocation.ts";
 import useTransitRouteSelection from "@/hooks/transit/useTransitRouteSelection.ts";
 import useTransitSnapshot from "@/hooks/transit/useTransitSnapshot.ts";
 import { withBasePath } from "@/utils/basePath.ts";
+import scrollPageToTop from "@/utils/scrollToTop.ts";
 import getTransitBoardViewState from "@/utils/transit/boardViewState.ts";
 import { formatRouteDisplayName, formatShortTime, getRoutePanelStyle } from "@/utils/transit/display.ts";
 import "@/styles/pages/transitPage.css";
@@ -94,10 +96,12 @@ export default function TransitPage() {
 			<div className="transit-shell">
 				<header className="transit-hero">
 					<div className="transit-hero-copy">
-						<a className="transit-home-link" href={withBasePath("/")}>
-							RU Tap
-						</a>
-						<p className="transit-eyebrow">Transit preview</p>
+						<div className="transit-hero-meta">
+							<a className="transit-home-link" href={withBasePath("/")}>
+								RU Tap
+							</a>
+							<p className="transit-eyebrow">Transit preview</p>
+						</div>
 						<h1>Rutgers buses, in one clear board.</h1>
 						<p className="transit-lead">
 							Track Rutgers New Brunswick routes and see the next stop for each live bus.
@@ -275,6 +279,8 @@ export default function TransitPage() {
 					</main>
 				) : null}
 			</div>
+
+			<FloatingTopButton onClick={scrollPageToTop} />
 		</div>
 	);
 }

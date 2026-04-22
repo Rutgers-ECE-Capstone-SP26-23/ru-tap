@@ -51,12 +51,14 @@ export default function useTransitSnapshot(selectedRouteId: string | null) {
 	const boardRefreshVersionRef = useRef(0);
 	const selectedRefreshVersionRef = useRef(0);
 
-	selectedRouteIdRef.current = selectedRouteId;
-
 	const commitSnapshot = (nextSnapshot: TransitSnapshot) => {
 		snapshotRef.current = nextSnapshot;
 		setSnapshot(nextSnapshot);
 	};
+
+	useEffect(() => {
+		selectedRouteIdRef.current = selectedRouteId;
+	}, [selectedRouteId]);
 
 	useEffect(() => {
 		let isDisposed = false;
