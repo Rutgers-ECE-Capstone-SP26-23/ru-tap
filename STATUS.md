@@ -3,7 +3,7 @@
 This file is the living snapshot of the repo as it exists right now. Update it when routes, architecture, assets,
 verification status, product scope, or active backlog meaningfully change.
 
-Last updated: 2026-04-21T22:05:21-04:00
+Last updated: 2026-04-22T10:13:38-04:00
 
 ## Project Snapshot
 
@@ -72,12 +72,14 @@ Last updated: 2026-04-21T22:05:21-04:00
 
 - GitHub Pages deployment workflow exists at `.github/workflows/deploy-pages.yml`.
 - The workflow:
-    - runs on pushes to `main`
+    - runs on pushes to `main` and `dev`
     - supports manual dispatch
     - installs with `pnpm`
     - builds `dist`
-    - adds `404.html` for SPA fallback
-    - deploys with the standard GitHub Pages actions
+    - rebuilds one published site tree before deploying with the standard GitHub Pages actions
+    - preserves the production root deployment while updating the `/dev/` preview deployment
+    - keeps the published site tree cached on the `pages-content` branch so each branch deploy can preserve the other
+      endpoint
 - Pages workflow Node runtime migration status (2026-03-31):
     - upgraded to `actions/checkout@v6` (`node24`)
     - upgraded to `actions/setup-node@v6` (`node24`)
@@ -85,13 +87,15 @@ Last updated: 2026-04-21T22:05:21-04:00
     - replaced `actions/upload-pages-artifact` with explicit tar creation + `actions/upload-artifact@v6`
     - upgraded to `actions/deploy-pages@v5` (`node24`)
     - set workflow env `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` to force transitive JavaScript actions to Node 24
-- `vite.config.ts` computes the Vite `base` automatically for project-site Pages builds.
+- `vite.config.ts` computes the Vite `base` automatically for project-site Pages builds and now accepts
+  `PAGES_DEPLOY_SUBPATH` for nested Pages targets such as `/dev/`.
 - `src/utils/basePath.ts` centralizes:
     - `withBasePath(...)`
     - `normalizeAppPath(...)`
 - The current app is therefore set up to run from:
     - `/` in normal/local environments
     - `/<repo-name>/` on GitHub Pages project sites
+    - `/<repo-name>/dev/` for the branch-backed Pages preview deployment
 
 ## Landing Page Status
 
@@ -167,6 +171,8 @@ Last updated: 2026-04-21T22:05:21-04:00
     - `MyRutgersPage` -> `src/components/myRutgers/ServiceButtonGrid.tsx` -> `ServiceButtonCard`
     - `MyRutgersPage` -> `src/components/myRutgers/ServiceWidgetPanel.tsx` -> `CourseSearchModule`, `WidgetPlaceholder`,
       or iframe
+    - the prior multi-result course-search browser now lives undeployed at
+      `src/components/myRutgers/undeployed/ArchivedCourseSearchModule.tsx`
 - Current styling posture:
     - intentionally simpler two-panel layout after earlier rejected redesigns
     - the tool selector now starts as a horizontal grid and becomes a vertical rail after selection
@@ -175,8 +181,11 @@ Last updated: 2026-04-21T22:05:21-04:00
     - the service panel no longer stretches its buttons to match the preview panel height
     - on widescreen layouts, the right-hand widget panel now enforces a viewport-aligned minimum height on initial load
       so the information surface reaches the bottom of the screen
-    - the course-search module borrows its internal search/filter/details language from the rooms page
-    - the course-search module no longer shows the four top-level metric cards
+    - the live course-search module is now a search-driven information panel rather than a full browsable course
+      directory
+    - the live course-search module no longer renders the full course list or campus filter chip row
+    - the previous two-panel course-search browser has been archived as undeployed code for later iteration instead of
+      remaining on the shipped path
     - the page now includes the shared floating back-to-top control
     - component prop types now live under `src/types/components/props/`
     - myRutgers model types now live under `src/types/myRutgers/models/`
@@ -241,6 +250,7 @@ Last updated: 2026-04-21T22:05:21-04:00
     - `layout/`: `PanelCard`, `SectionBlock`
     - `myRutgers/`: `CourseSearchModule`, `ServiceButtonCard`, `ServiceButtonGrid`, `ServiceWidgetPanel`,
       `WidgetPlaceholder`
+    - `myRutgers/undeployed/`: `ArchivedCourseSearchModule`
     - `rooms/`: `RoomsDetailsPanel`, `RoomsDirectoryRow`, `RoomsDirectoryTable`, `RoomsMetricCard`, `RoomsSortButton`
     - `transit/`: `TransitBusCard`, `TransitMetricCard`, `TransitRouteButton`, `TransitRouteGroup`
 
@@ -585,7 +595,12 @@ Fresh browser verification status:
 
 - No fresh end-to-end browser pass was run after the latest transit polish in this update cycle.
 - No browser pass was run after the myRutgers course-search module landed in this update cycle.
-- The most recent verified check in this turn is `tsc --noEmit -p tsconfig.app.json`.
+- No browser pass was run after the 2026-04-22 mobile course-search layout fix.
+- No browser pass was run after the 2026-04-22 course-search simplification and archive split.
+- A fresh `tsc --noEmit -p tsconfig.app.json` rerun was attempted in this turn, but this WSL shell still lacks a Linux
+  `node` binary on `PATH`, and Windows `node.exe` interop failed with a WSL socket error.
+- The most recent verified TypeScript check is still the earlier `tsc --noEmit -p tsconfig.app.json` pass recorded in
+  the 2026-04-21 snapshot.
 
 Current build artifact snapshot from the latest verified build:
 
@@ -648,7 +663,8 @@ Testing status:
 | `src/components/landing/*`                        | Landing-page-specific reusable UI pieces                                                |
 | `src/components/layout/*`                         | Shared structural card/section building blocks                                          |
 | `src/components/myRutgers/*`                      | myRutgers selector and preview-panel components                                         |
-| `src/components/myRutgers/CourseSearchModule.tsx` | Live myRutgers course-search module backed by the condensed academics dataset           |
+| `src/components/myRutgers/CourseSearchModule.tsx` | Live search-driven myRutgers course-results information panel                           |
+| `src/components/myRutgers/undeployed/ArchivedCourseSearchModule.tsx` | Undeployed archive of the earlier two-panel course-search browser |
 | `src/components/rooms/*`                          | Rooms-presentational UI components used by `RoomsPage.tsx`                              |
 | `src/components/transit/*`                        | Transit-presentational UI components used by `TransitPage.tsx`                          |
 | `scripts/buildSocCatalog.mjs`                     | Rutgers SOC fetch/recompose/write pipeline for the condensed academics dataset          |
@@ -688,7 +704,8 @@ Testing status:
 | `src/styles/pages/roomsPage.css`                  | Room finder page styling                                                                |
 | `src/styles/pages/transitPage.css`                | Transit page styling                                                                    |
 | `src/styles/components/*`                         | Component-specific stylesheets                                                          |
-| `src/styles/components/CourseSearchModule.css`    | Rooms-inspired styling for the live myRutgers course-search module                      |
+| `src/styles/components/CourseSearchModule.css`    | Styling for the live search-results-only myRutgers course panel                         |
+| `src/styles/components/ArchivedCourseSearchModule.css` | Frozen styling for the undeployed archived course-search browser                    |
 | `public/manifest.webmanifest`                     | Install metadata                                                                        |
 | `public/favicon.svg`                              | Animated app icon / favicon                                                             |
 | `vite.config.ts`                                  | Vite config, aliasing, Pages base logic, and service-worker build wiring                |
