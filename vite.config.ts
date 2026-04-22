@@ -3,9 +3,14 @@ import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 
 const repositoryName = process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "";
+const deploySubpath = (process.env.PAGES_DEPLOY_SUBPATH ?? "").trim().replace(/^\/+|\/+$/g, "");
 const isGitHubPagesBuild = process.env.GITHUB_ACTIONS === "true" && repositoryName !== "";
 const isUserOrOrgSite = repositoryName.endsWith(".github.io");
-const pagesBase = isGitHubPagesBuild && !isUserOrOrgSite ? `/${repositoryName}/` : "/";
+const pagesBaseSegments = [
+	...(isGitHubPagesBuild && !isUserOrOrgSite ? [repositoryName] : []),
+	...(deploySubpath === "" ? [] : [deploySubpath])
+];
+const pagesBase = pagesBaseSegments.length === 0 ? "/" : `/${pagesBaseSegments.join("/")}/`;
 
 // https://vite.dev/config/
 export default defineConfig({

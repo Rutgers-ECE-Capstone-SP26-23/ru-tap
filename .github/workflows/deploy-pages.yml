@@ -4,28 +4,32 @@ name: Deploy to GitHub Pages
     push:
         branches:
             - main
+            - dev
     workflow_dispatch:
 
 permissions:
-    contents: read
+    contents: write
     pages: write
     id-token: write
 
 concurrency:
-    group: pages
-    cancel-in-progress: true
+    group: pages-site
+    cancel-in-progress: false
 
 jobs:
     build:
         runs-on: ubuntu-latest
         env:
             FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+            PAGES_STATE_BRANCH: pages-content
         environment:
             name: github-pages
             url: ${{ steps.deployment.outputs.page_url }}
         steps:
             - name: Checkout
               uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
 
             - name: Setup pnpm
               uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
@@ -39,27 +43,95 @@ jobs:
             - name: Configure GitHub Pages
               uses: actions/configure-pages@v6
 
+            - name: Resolve deployment target
+              id: target
+              run: |
+                  set -euo pipefail
+
+                  if [ "${GITHUB_REF_NAME}" = "main" ]; then
+                    deploy_target="production"
+                  elif [ "${GITHUB_REF_NAME}" = "dev" ]; then
+                    deploy_target="dev"
+                  else
+                    echo "::error::This workflow only deploys from the main and dev branches."
+                    exit 1
+                  fi
+
+                  if [ "${deploy_target}" = "production" ]; then
+                    deploy_subpath=""
+                  else
+                    deploy_subpath="dev"
+                  fi
+
+                  echo "deploy_target=${deploy_target}" >> "${GITHUB_OUTPUT}"
+                  echo "deploy_subpath=${deploy_subpath}" >> "${GITHUB_OUTPUT}"
+
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
             - name: Build site
+              env:
+                  PAGES_DEPLOY_SUBPATH: ${{ steps.target.outputs.deploy_subpath }}
               run: pnpm build
 
-            - name: Add SPA fallback
+            - name: Add SPA fallback to build output
+              run: cp dist/index.html dist/404.html
+
+            - name: Rebuild published site tree
+              id: site_tree
+              env:
+                  DEPLOY_TARGET: ${{ steps.target.outputs.deploy_target }}
+                  DEPLOY_SUBPATH: ${{ steps.target.outputs.deploy_subpath }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  cp dist/index.html dist/404.html
-                  touch dist/.nojekyll
+                  set -euo pipefail
+
+                  publish_dir="${RUNNER_TEMP}/pages-content"
+                  repo_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+                  git init "${publish_dir}"
+                  cd "${publish_dir}"
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git remote add origin "${repo_url}"
+
+                  if git fetch --depth=1 origin "${PAGES_STATE_BRANCH}"; then
+                    git checkout -B "${PAGES_STATE_BRANCH}" FETCH_HEAD
+                  else
+                    git checkout --orphan "${PAGES_STATE_BRANCH}"
+                    find . -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
+                  fi
+
+                  if [ "${DEPLOY_TARGET}" = "production" ]; then
+                    find . -mindepth 1 -maxdepth 1 ! -name ".git" ! -name "dev" -exec rm -rf {} +
+                    cp -R "${GITHUB_WORKSPACE}/dist/." .
+                  else
+                    rm -rf "./${DEPLOY_SUBPATH}"
+                    mkdir -p "./${DEPLOY_SUBPATH}"
+                    cp -R "${GITHUB_WORKSPACE}/dist/." "./${DEPLOY_SUBPATH}/"
+                  fi
+
+                  touch .nojekyll
+                  git add -A
+
+                  if git diff --cached --quiet; then
+                    echo "did_change=false" >> "${GITHUB_OUTPUT}"
+                  else
+                    git commit -m "Deploy ${DEPLOY_TARGET} site from ${GITHUB_SHA}"
+                    echo "did_change=true" >> "${GITHUB_OUTPUT}"
+                  fi
+
+                  echo "publish_dir=${publish_dir}" >> "${GITHUB_OUTPUT}"
 
             - name: Archive Pages artifact
               run: |
                   tar \
                     --dereference \
                     --hard-dereference \
-                    --directory dist \
-                    -cvf "$RUNNER_TEMP/artifact.tar" \
+                    --directory "${{ steps.site_tree.outputs.publish_dir }}" \
+                    -cvf "${RUNNER_TEMP}/artifact.tar" \
                     --exclude=.git \
                     --exclude=.github \
-                    --exclude=".[^/]*" \
                     .
 
             - name: Upload Pages artifact
@@ -73,3 +145,29 @@ jobs:
             - name: Deploy to GitHub Pages
               id: deployment
               uses: actions/deploy-pages@v5
+
+            - name: Persist published site state
+              if: steps.site_tree.outputs.did_change == 'true'
+              run: |
+                  cd "${{ steps.site_tree.outputs.publish_dir }}"
+                  git push origin "HEAD:${PAGES_STATE_BRANCH}"
+
+            - name: Summarize deployed endpoint
+              run: |
+                  set -euo pipefail
+
+                  base_url="${{ steps.deployment.outputs.page_url }}"
+
+                  if [ -n "${{ steps.target.outputs.deploy_subpath }}" ]; then
+                    endpoint_url="${base_url%/}/${{ steps.target.outputs.deploy_subpath }}/"
+                  else
+                    endpoint_url="${base_url}"
+                  fi
+
+                  {
+                    echo "### Deployment"
+                    echo
+                    echo "- Target: \`${{ steps.target.outputs.deploy_target }}\`"
+                    echo "- Endpoint: ${endpoint_url}"
+                    echo "- Published site state branch: \`${PAGES_STATE_BRANCH}\`"
+                  } >> "${GITHUB_STEP_SUMMARY}"
