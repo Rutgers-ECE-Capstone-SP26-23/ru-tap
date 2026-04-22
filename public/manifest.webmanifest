@@ -2,7 +2,7 @@
 	"$schema": "https://www.schemastore.org/web-manifest.json",
 	"name": "RU Tap",
 	"short_name": "RU Tap",
-	"description": "RU Tap is a Rutgers workflow app unifying academics, transit, maps, and careers in one interface.",
+	"description": "RU Tap is a Rutgers workflow app unifying academics, transit, and maps and rooms in one interface.",
 	"categories": ["education", "productivity", "navigation"],
 	"lang": "en-US",
 	"id": ".",

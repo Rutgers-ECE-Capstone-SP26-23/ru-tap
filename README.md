@@ -1,7 +1,7 @@
 # RU Tap
 
-RU Tap is a Rutgers workflow prototype that brings academics, transit, maps and rooms, and careers into one installable
-web app experience.
+RU Tap is a Rutgers workflow prototype that brings academics, transit, and maps and rooms into one installable web app
+experience.
 
 ## Current Repo Scope
 
