@@ -1,13 +1,13 @@
 import type MyRutgersEmbedMode from "@/types/myRutgers/models/myRutgersEmbedMode.ts";
-import type MyRutgersServiceStatus from "@/types/myRutgers/models/myRutgersServiceStatus.ts";
+import type MyRutgersModule from "@/types/myRutgers/models/myRutgersModule.ts";
 
 type MyRutgersService = {
 	id: string;
 	title: string;
 	summary: string;
-	status: MyRutgersServiceStatus;
 	embedMode: MyRutgersEmbedMode;
 	embedUrl?: string;
+	module?: MyRutgersModule;
 	notes?: string;
 };
 

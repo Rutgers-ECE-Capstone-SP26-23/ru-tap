@@ -1,0 +1,2 @@
+# Keep generated minified payloads from being expanded by Prettier.
+**/*.min.json

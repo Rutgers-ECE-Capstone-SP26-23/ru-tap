@@ -3,7 +3,6 @@ import type ServiceButtonCardProps from "@/types/components/props/serviceButtonC
 
 export default function ServiceButtonCard({ service, isSelected, onSelect }: ServiceButtonCardProps) {
 	const buttonClassName = isSelected ? "service-button selected" : "service-button";
-	const serviceStatusClassName = service.status === "ready" ? "service-status ready" : "service-status planned";
 
 	const handleClick = () => onSelect(service.id);
 
@@ -11,7 +10,6 @@ export default function ServiceButtonCard({ service, isSelected, onSelect }: Ser
 		<button type="button" className={buttonClassName} onClick={handleClick} aria-pressed={isSelected}>
 			<span className="service-title">{service.title}</span>
 			<span className="service-summary">{service.summary}</span>
-			<span className={serviceStatusClassName}>{service.status}</span>
 		</button>
 	);
 }

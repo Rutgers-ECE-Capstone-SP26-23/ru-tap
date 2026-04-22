@@ -1,26 +1,40 @@
 .myrutgers-page {
 	background: var(--page-backdrop);
 	min-height: 100svh;
-	padding: 24px 20px 32px;
+	padding: 52px 18px 40px;
 }
 
 .myrutgers-shell {
 	margin: 0 auto;
-	max-width: 1200px;
+	max-width: 1280px;
 }
 
 .myrutgers-header {
-	margin: 0 0 28px;
-	max-width: 64ch;
+	display: grid;
+	gap: 0;
+	margin: 0 0 24px;
+}
+
+.myrutgers-home-link,
+.myrutgers-kicker {
+	color: #c03;
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.11em;
+	text-transform: uppercase;
+}
+
+.myrutgers-header-meta {
+	align-items: center;
+	column-gap: 10px;
+	display: flex;
+	flex-wrap: wrap;
+	row-gap: 4px;
 }
 
 .myrutgers-home-link {
-	color: #c03;
 	display: inline-flex;
-	font-size: 0.9rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	margin-bottom: 12px;
+	margin: 0;
 	text-decoration: none;
 }
 
@@ -29,27 +43,37 @@
 }
 
 .myrutgers-kicker {
-	color: var(--text);
-	font-size: 0.98rem;
-	font-weight: 600;
-	letter-spacing: 0.01em;
-	margin: 10px 0 0;
+	margin: 0;
 	text-wrap: balance;
 }
 
+.myrutgers-kicker::before {
+	content: "·";
+	margin-right: 10px;
+}
+
 .myrutgers-header h1 {
-	font-size: clamp(3rem, 7vw, 4.8rem);
-	line-height: 0.94;
-	margin: 0;
-	max-width: 10ch;
+	font-size: clamp(2.4rem, 8vw, 5rem);
+	line-height: 0.95;
+	margin: 8px 0 16px;
+	max-width: 12ch;
 	text-wrap: balance;
 }
 
 .myrutgers-lead {
-	font-size: 1.05rem;
+	font-size: 1.08rem;
+	font-weight: 500;
+	line-height: 1.5;
+	margin: 0;
+	max-width: 64ch;
+	text-wrap: balance;
+}
+
+.myrutgers-supporting-copy {
+	color: var(--text);
 	line-height: 1.55;
-	margin: 14px 0 0;
-	max-width: 56ch;
+	margin: 12px 0 0;
+	max-width: 62ch;
 	text-wrap: balance;
 }
 
@@ -59,14 +83,31 @@
 	gap: 16px;
 }
 
+.myrutgers-widget-shell {
+	display: flex;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.myrutgers-widget-shell:not(.visible):not(.closing) {
+	display: none;
+}
+
 .service-grid-panel {
-	background: rgba(255, 255, 255, 0.03);
+	background: rgba(255, 255, 255, 0.04);
 	border: 1px solid var(--border);
-	border-radius: 16px;
+	border-radius: 18px;
 	display: flex;
 	flex-direction: column;
-	height: 100%;
 	padding: 20px;
+}
+
+.service-grid-panel-horizontal {
+	min-height: 0;
+}
+
+.service-grid-panel-vertical {
+	align-self: start;
 }
 
 .service-grid-panel-head {
@@ -97,18 +138,128 @@
 	white-space: nowrap;
 }
 
+.service-grid-panel-reset {
+	background: rgba(204, 0, 51, 0.1);
+	border: 1px solid rgba(204, 0, 51, 0.3);
+	border-radius: 999px;
+	color: var(--text-h);
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	padding: 8px 12px;
+	transition:
+		background 0.2s ease,
+		border-color 0.2s ease,
+		transform 0.2s ease;
+	white-space: nowrap;
+}
+
+.service-grid-panel-reset:hover {
+	background: rgba(204, 0, 51, 0.16);
+	border-color: rgba(204, 0, 51, 0.46);
+	transform: translateY(-1px);
+}
+
 @media (max-width: 760px) {
 	.service-grid-panel-head {
 		flex-direction: column;
 	}
 }
 
-@media (min-width: 980px) {
-	.myrutgers-page {
-		padding: 32px 28px 40px;
+@media (max-width: 979px) {
+	.myrutgers-widget-shell {
+		display: grid;
+		grid-template-rows: 0fr;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(-28px);
+		transition:
+			grid-template-rows 0.42s ease,
+			opacity 0.32s ease,
+			transform 0.42s ease;
 	}
 
+	.myrutgers-widget-shell.visible,
+	.myrutgers-widget-shell.closing {
+		grid-template-rows: 1fr;
+	}
+
+	.myrutgers-widget-shell.visible {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateY(0);
+	}
+
+	.myrutgers-widget-shell.closing {
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(28px);
+	}
+
+	.myrutgers-widget-shell > * {
+		flex: none;
+		min-height: 0;
+		overflow: hidden;
+	}
+}
+
+@media (min-width: 700px) {
+	.myrutgers-page {
+		padding: 64px 28px 40px;
+	}
+}
+
+@media (min-width: 980px) {
 	.myrutgers-layout {
-		grid-template-columns: minmax(340px, 400px) minmax(0, 1fr);
+		align-items: start;
+		grid-template-columns: minmax(0, 1fr) 0fr;
+		transition: grid-template-columns 0.42s ease;
+	}
+
+	.myrutgers-layout.has-selection {
+		align-items: start;
+		grid-template-columns: minmax(272px, 320px) minmax(0, 1fr);
+	}
+
+	.myrutgers-widget-shell {
+		display: flex;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateX(36px);
+		transition:
+			opacity 0.34s ease,
+			transform 0.42s ease;
+	}
+
+	.myrutgers-widget-shell.visible {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateX(0);
+	}
+
+	.myrutgers-widget-shell.closing {
+		opacity: 0;
+		pointer-events: none;
+		transform: translateX(36px);
+	}
+
+	.myrutgers-widget-shell > * {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.myrutgers-layout:not(.has-selection) .service-grid-panel-horizontal {
+		padding: 24px;
+	}
+
+	.myrutgers-layout:not(.has-selection) .service-grid-horizontal {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 1040px) {
+	.myrutgers-page {
+		padding: 82px 40px 48px;
 	}
 }

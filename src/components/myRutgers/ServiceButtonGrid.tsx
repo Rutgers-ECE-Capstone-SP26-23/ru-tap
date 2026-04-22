@@ -2,9 +2,17 @@ import ServiceButtonCard from "@/components/myRutgers/ServiceButtonCard.tsx";
 import "@/styles/components/ServiceButtonGrid.css";
 import type ServiceButtonGridProps from "@/types/components/props/serviceButtonGridProps.ts";
 
-export default function ServiceButtonGrid({ services, selectedServiceId, onSelectService }: ServiceButtonGridProps) {
+export default function ServiceButtonGrid({
+	layout,
+	services,
+	selectedServiceId,
+	onSelectService
+}: ServiceButtonGridProps) {
+	const gridClassName =
+		layout === "horizontal" ? "service-grid service-grid-horizontal" : "service-grid service-grid-vertical";
+
 	return (
-		<div className="service-grid">
+		<div className={gridClassName}>
 			{services.map(service => (
 				<ServiceButtonCard
 					key={service.id}

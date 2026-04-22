@@ -2,43 +2,25 @@ import type MyRutgersService from "@/types/myRutgers/models/myRutgersService.ts"
 
 export const myRutgersServices: readonly MyRutgersService[] = [
 	{
-		id: "course-schedule",
-		title: "Course Schedule",
-		summary: "Class blocks, instructors, and meeting locations.",
-		status: "planned",
-		embedMode: "placeholder",
-		notes: "Planned to surface upcoming classes, instructors, and locations in one quick view."
+		id: "course-search",
+		title: "Course Search",
+		summary: "Look up sections, instructors, meeting times, and rooms.",
+		embedMode: "module",
+		module: "course-search",
+		notes: "Built on a condensed Rutgers SOC snapshot for faster catalog browsing."
 	},
 	{
-		id: "grades",
-		title: "Grades",
-		summary: "Current term grade summary and course outcomes.",
-		status: "planned",
-		embedMode: "placeholder",
-		notes: "Planned to show term summaries with course-level grade detail."
+		id: "course-schedule-planner",
+		title: "Course Schedule Planner",
+		summary: "Open Rutgers CSP to compare sections and build a schedule.",
+		embedMode: "iframe",
+		embedUrl: "https://sims.rutgers.edu/csp/"
 	},
 	{
-		id: "holds",
-		title: "Holds",
-		summary: "Registration-affecting alerts and next actions.",
-		status: "planned",
-		embedMode: "placeholder",
-		notes: "Planned to make alerts and next steps easier to spot."
-	},
-	{
-		id: "registration",
-		title: "Registration",
-		summary: "Registration windows, status, and enrollment tools.",
-		status: "planned",
-		embedMode: "placeholder",
-		notes: "Planned to keep dates, status, and enrollment shortcuts close at hand."
-	},
-	{
-		id: "announcements",
-		title: "Announcements",
-		summary: "myRutgers notices and institutional updates.",
-		status: "planned",
-		embedMode: "placeholder",
-		notes: "Planned to bring important updates into one clearer feed."
+		id: "webreg",
+		title: "WebReg",
+		summary: "Open Rutgers WebReg to register, adjust, or review your schedule.",
+		embedMode: "iframe",
+		embedUrl: "https://sims.rutgers.edu/webreg/"
 	}
 ];

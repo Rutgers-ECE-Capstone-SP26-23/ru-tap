@@ -40,29 +40,3 @@
 	font-size: 0.93rem;
 	line-height: 1.45;
 }
-
-.service-status {
-	border-radius: 999px;
-	font-size: 12px;
-	font-weight: 700;
-	justify-self: start;
-	letter-spacing: 0.05em;
-	padding: 5px 10px;
-	text-transform: uppercase;
-}
-
-.service-status.planned {
-	background: rgba(120, 128, 140, 0.15);
-	color: var(--text-h);
-}
-
-.service-status.ready {
-	background: rgba(34, 139, 34, 0.2);
-	color: #0b5f0b;
-}
-
-@media (prefers-color-scheme: dark) {
-	.service-status.ready {
-		color: #90ee90;
-	}
-}
