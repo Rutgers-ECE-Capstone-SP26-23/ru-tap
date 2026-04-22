@@ -14,6 +14,7 @@ function buildAppleMapsHref(room: RoomListing) {
 }
 
 export default function RoomsDetailsPanel({
+	detailsRef,
 	selectedRoom,
 	filteredRoomCount,
 	visibleBuildings,
@@ -22,7 +23,7 @@ export default function RoomsDetailsPanel({
 	onCloseMapChooser
 }: RoomsDetailsPanelProps) {
 	return (
-		<div className="rooms-details-stack">
+		<div ref={detailsRef} className="rooms-details-stack">
 			<aside className="rooms-details-panel" aria-label="Selected classroom">
 				{selectedRoom ? (
 					<>

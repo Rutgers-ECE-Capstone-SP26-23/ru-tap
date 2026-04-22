@@ -1,16 +1,20 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import FloatingTopButton from "@/components/landing/FloatingTopButton.tsx";
 import RoomsDetailsPanel from "@/components/rooms/RoomsDetailsPanel.tsx";
 import RoomsDirectoryTable from "@/components/rooms/RoomsDirectoryTable.tsx";
 import RoomsMetricCard from "@/components/rooms/RoomsMetricCard.tsx";
 import { roomsByCampus } from "@/data/rooms.ts";
+import useMediaQuery from "@/hooks/useMediaQuery.ts";
 import "@/styles/pages/roomsPage.css";
 import type RoomCampus from "@/types/rooms/models/roomCampus.ts";
 import type RoomListing from "@/types/rooms/models/roomListing.ts";
 import type RoomSortDirection from "@/types/rooms/pages/roomSortDirection.ts";
 import type RoomSortKey from "@/types/rooms/pages/roomSortKey.ts";
 import { withBasePath } from "@/utils/basePath.ts";
+import scrollPageToTop from "@/utils/scrollToTop.ts";
 
 const campusOrder = Object.keys(roomsByCampus) as RoomCampus[];
+const STACKED_LAYOUT_QUERY = "(max-width: 1039px)";
 
 const roomListings: readonly RoomListing[] = campusOrder.flatMap(campus => {
 	const campusRooms = roomsByCampus[campus];
@@ -82,10 +86,13 @@ export default function RoomsPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortKey, setSortKey] = useState<RoomSortKey>("roomCode");
 	const [sortDirection, setSortDirection] = useState<RoomSortDirection>("asc");
+	const isStackedLayout = useMediaQuery(STACKED_LAYOUT_QUERY);
 	const [selectedRoomCode, setSelectedRoomCode] = useState<RoomListing["roomCode"] | null>(
 		roomListings[0]?.roomCode ?? null
 	);
 	const [mapChooserRoomCode, setMapChooserRoomCode] = useState<RoomListing["roomCode"] | null>(null);
+	const roomDetailsRef = useRef<HTMLDivElement | null>(null);
+	const shouldScrollToDetailsRef = useRef(false);
 	const normalizedQuery = searchQuery.trim().toLowerCase();
 	const filteredRooms = roomListings.filter(
 		room => (selectedCampus === null || room.campus === selectedCampus) && matchesRoomQuery(room, normalizedQuery)
@@ -94,6 +101,30 @@ export default function RoomsPage() {
 	const selectedRoom = sortedRooms.find(room => room.roomCode === selectedRoomCode) ?? sortedRooms[0] ?? null;
 	const visibleBuildings = new Set(filteredRooms.map(room => room.building)).size;
 	const campusLabel = selectedCampus ?? "All campuses";
+
+	useEffect(() => {
+		if (!isStackedLayout) {
+			shouldScrollToDetailsRef.current = false;
+			return;
+		}
+
+		if (!selectedRoom || !shouldScrollToDetailsRef.current) return;
+
+		shouldScrollToDetailsRef.current = false;
+		const prefersReducedMotion = globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const animationFrameId = globalThis.requestAnimationFrame(() => {
+			const roomDetailsTop = roomDetailsRef.current?.getBoundingClientRect().top;
+
+			if (roomDetailsTop === undefined) return;
+
+			globalThis.scrollTo({
+				top: Math.max(0, globalThis.scrollY + roomDetailsTop - 16),
+				behavior: prefersReducedMotion ? "auto" : "smooth"
+			});
+		});
+
+		return () => globalThis.cancelAnimationFrame(animationFrameId);
+	}, [isStackedLayout, selectedRoom]);
 
 	const clearFilters = () => {
 		setSearchQuery("");
@@ -115,10 +146,12 @@ export default function RoomsPage() {
 			<div className="rooms-shell">
 				<header className="rooms-hero">
 					<div className="rooms-hero-copy">
-						<a className="rooms-home-link" href={withBasePath("/")}>
-							RU Tap
-						</a>
-						<p className="rooms-eyebrow">Maps and rooms preview</p>
+						<div className="rooms-hero-meta">
+							<a className="rooms-home-link" href={withBasePath("/")}>
+								RU Tap
+							</a>
+							<p className="rooms-eyebrow">Maps and rooms preview</p>
+						</div>
 						<h1>Find a classroom faster.</h1>
 						<p className="rooms-lead">
 							Search Rutgers New Brunswick teaching spaces by campus, building, or room code.
@@ -193,6 +226,7 @@ export default function RoomsPage() {
 							campusLabel={campusLabel}
 							onSort={handleSort}
 							onSelectRoom={roomCode => {
+								shouldScrollToDetailsRef.current = isStackedLayout;
 								setSelectedRoomCode(roomCode);
 								setMapChooserRoomCode(null);
 							}}
@@ -201,6 +235,7 @@ export default function RoomsPage() {
 					</section>
 
 					<RoomsDetailsPanel
+						detailsRef={roomDetailsRef}
 						selectedRoom={selectedRoom}
 						filteredRoomCount={filteredRooms.length}
 						visibleBuildings={visibleBuildings}
@@ -214,6 +249,8 @@ export default function RoomsPage() {
 					/>
 				</main>
 			</div>
+
+			<FloatingTopButton onClick={scrollPageToTop} />
 		</div>
 	);
 }
