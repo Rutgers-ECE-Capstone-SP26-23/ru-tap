@@ -1,0 +1,14 @@
+{
+	"generatedAt": "2026-04-21T21:04:16.294Z",
+	"source": {
+		"campus": "NB",
+		"courseCount": 4397,
+		"includesPrereqs": true,
+		"originalBytes": 20377665,
+		"sectionCount": 11641,
+		"term": "9",
+		"url": "https://classes.rutgers.edu/soc/api/courses.json?year=2026&term=9&campus=NB",
+		"year": "2026"
+	},
+	"version": 1
+}

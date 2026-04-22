@@ -1,0 +1,1 @@
+var e=`/ru-tap/`,t=e.endsWith(`/`)?e:`${e}/`,n=t.replace(/\/+$/,``)||`/`;function r(e){return e===`/`?t:`${t}${e.replace(/^\/+/,``)}`}function i(e){let t=e.replace(/\/+$/,``)||`/`;if(n!==`/`&&t.toLowerCase().startsWith(n.toLowerCase())){let e=t.slice(n.length)||`/`;return(e.startsWith(`/`)?e:`/${e}`).toLowerCase()}return t.toLowerCase()}export{r as n,i as t};
