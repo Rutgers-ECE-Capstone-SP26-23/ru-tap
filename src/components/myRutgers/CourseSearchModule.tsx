@@ -31,6 +31,18 @@ const campusSortOrder = [
 ] as const;
 const hiddenCampusOptions = new Set(["Campus TBA"]);
 const stringCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+const courseSearchTimeZone = "America/New_York";
+const courseSearchTimeFormatter = new Intl.DateTimeFormat(undefined, {
+	hour: "numeric",
+	minute: "2-digit",
+	timeZone: courseSearchTimeZone
+});
+const courseSearchTimePartsFormatter = new Intl.DateTimeFormat("en-US", {
+	hour: "2-digit",
+	hourCycle: "h23",
+	minute: "2-digit",
+	timeZone: courseSearchTimeZone
+});
 
 function getAcademicCourseCode(course: Pick<AcademicCourse, "dept" | "number" | "school">) {
 	return `${course.school}:${course.dept}:${course.number}`;
@@ -83,14 +95,15 @@ function formatMilitaryTime(time: string) {
 	}
 
 	const hours = Number(time.slice(0, 2));
-	const minutes = time.slice(2);
-	const date = new Date(Date.UTC(2026, 0, 1, hours, Number(minutes)));
+	const minutes = Number(time.slice(2));
+	const targetDate = Date.UTC(2026, 8, 1, hours, minutes);
+	const easternDateParts = courseSearchTimePartsFormatter.formatToParts(new Date(targetDate));
+	const easternHours = Number(easternDateParts.find(part => part.type === "hour")?.value ?? "0");
+	const easternMinutes = Number(easternDateParts.find(part => part.type === "minute")?.value ?? "0");
+	const timezoneOffsetMs = targetDate - Date.UTC(2026, 8, 1, easternHours, easternMinutes);
+	const date = new Date(targetDate + timezoneOffsetMs);
 
-	return new Intl.DateTimeFormat(undefined, {
-		hour: "numeric",
-		minute: "2-digit",
-		timeZone: "UTC"
-	}).format(date);
+	return courseSearchTimeFormatter.format(date);
 }
 
 function formatMeetingDay(day: string) {
@@ -340,7 +353,9 @@ export default function CourseSearchModule() {
 					</div>
 					<div className="course-search-results-meta" aria-live="polite">
 						<strong>{hasQuery ? matchedCourses.length : catalogIndex.allCourses.length}</strong>
-						<span>{hasQuery ? (matchedCourses.length === 1 ? "match" : "matches") : "courses indexed"}</span>
+						<span>
+							{hasQuery ? (matchedCourses.length === 1 ? "match" : "matches") : "courses indexed"}
+						</span>
 					</div>
 				</div>
 
@@ -358,133 +373,139 @@ export default function CourseSearchModule() {
 					/>
 				</div>
 
-				{!hasQuery ? (
-						<div className="course-search-empty-state">
-							<h3>Start with a search.</h3>
-							<p>
-								Search by course code, title, instructor, or location to pull up the course details
-								you need.
-							</p>
-						</div>
-				) : activeCourse ? (
-					<div className="course-search-results-stack">
-						<section className="course-search-detail-card">
-							<p className="course-search-section-eyebrow">Search results</p>
-							<h4>{activeCourse.course.name}</h4>
-							<p className="course-search-details-code">{activeCourse.code}</p>
-							<p className="course-search-result-meta-line">
-								{matchedCourses.length === 1
-									? "1 course matched your search."
-									: `Showing the first of ${matchedCourses.length} matching courses. Refine the query to narrow the result.`}
-							</p>
-							<ul className="course-search-stat-list">
-								<li>{activeCourse.summaryLine}</li>
-								<li>School code {activeCourse.course.school}</li>
-								<li>Department code {activeCourse.course.dept}</li>
-								<li>Course number {activeCourse.course.number}</li>
-								<li>{formatCampusSummary(activeCourse.campuses)}</li>
-								<li>{matchedSectionCount} sections across the current search results</li>
-							</ul>
-						</section>
-
-						{activeCourse.course.prereqs ? (
+				{hasQuery ? (
+					activeCourse ? (
+						<div className="course-search-results-stack">
 							<section className="course-search-detail-card">
-								<h4>Prerequisites</h4>
-								<p>{activeCourse.course.prereqs}</p>
+								<p className="course-search-section-eyebrow">Search results</p>
+								<h4>{activeCourse.course.name}</h4>
+								<p className="course-search-details-code">{activeCourse.code}</p>
+								<p className="course-search-result-meta-line">
+									{matchedCourses.length === 1
+										? "1 course matched your search."
+										: `Showing the first of ${matchedCourses.length} matching courses. Refine the query to narrow the result.`}
+								</p>
+								<ul className="course-search-stat-list">
+									<li>{activeCourse.summaryLine}</li>
+									<li>School code {activeCourse.course.school}</li>
+									<li>Department code {activeCourse.course.dept}</li>
+									<li>Course number {activeCourse.course.number}</li>
+									<li>{formatCampusSummary(activeCourse.campuses)}</li>
+									<li>{matchedSectionCount} sections across the current search results</li>
+								</ul>
 							</section>
-						) : null}
 
-						<section className="course-search-detail-card">
-							<h4>Sections</h4>
-							<div className="course-search-section-list">
-								{activeCourse.course.sections.map(section => (
-									<article key={`${activeCourse.code}-${section.index}`} className="course-search-section-card">
-										<div className="course-search-section-head">
-											<div>
-												<p className="course-search-section-eyebrow">Section {section.id}</p>
-												<h5>Index {section.index}</h5>
-											</div>
-											<span className="course-search-section-chip">
-												{section.professors.length === 0
-													? "Instructor TBA"
-													: section.professors.length === 1
-														? "1 instructor"
-														: `${section.professors.length} instructors`}
-											</span>
-										</div>
+							{activeCourse.course.prereqs ? (
+								<section className="course-search-detail-card">
+									<h4>Prerequisites</h4>
+									<p>{activeCourse.course.prereqs}</p>
+								</section>
+							) : null}
 
-										{section.professors.length > 0 ? (
-											<p className="course-search-section-professors">
-												{section.professors.join(" · ")}
-											</p>
-										) : null}
-
-										<div className="course-search-meeting-list">
-											{section.meetings.map((meeting, index) => (
-												<div
-													key={`${section.index}-${meeting.day}-${meeting.start}-${meeting.room}-${index}`}
-													className="course-search-meeting-row">
-													<div>
-														<p className="course-search-meeting-window">
-															{formatMeetingWindow(meeting)}
-														</p>
-														<p className="course-search-meeting-location">
-															{formatMeetingLocation(meeting)}
-														</p>
-													</div>
-													<span className="course-search-meeting-mode">
-														{meeting.mode.trim() === "" ? "Mode TBA" : meeting.mode}
-													</span>
+							<section className="course-search-detail-card">
+								<h4>Sections</h4>
+								<div className="course-search-section-list">
+									{activeCourse.course.sections.map(section => (
+										<article
+											key={`${activeCourse.code}-${section.index}`}
+											className="course-search-section-card">
+											<div className="course-search-section-head">
+												<div>
+													<p className="course-search-section-eyebrow">
+														Section {section.id}
+													</p>
+													<h5>Index {section.index}</h5>
 												</div>
-											))}
-										</div>
+												<span className="course-search-section-chip">
+													{section.professors.length === 0
+														? "Instructor TBA"
+														: section.professors.length === 1
+															? "1 instructor"
+															: `${section.professors.length} instructors`}
+												</span>
+											</div>
 
-										{section.crossListings?.length ? (
-											<p className="course-search-section-note">
-												Cross-listed as{" "}
-												{section.crossListings
-													.map(
-														crossListing =>
-															`${crossListing.dept}:${crossListing.number}:${crossListing.section} (${crossListing.index})`
-													)
-													.join(" · ")}
-											</p>
-										) : null}
-										{section.openTo ? (
-											<p className="course-search-section-note">
-												<strong>Open to:</strong> {section.openTo}
-											</p>
-										) : null}
-										{section.eligibility ? (
-											<p className="course-search-section-note">
-												<strong>Eligibility:</strong> {section.eligibility}
-											</p>
-										) : null}
-										{section.notes ? (
-											<p className="course-search-section-note">
-												<strong>Notes:</strong> {section.notes}
-											</p>
-										) : null}
-										{section.comments ? (
-											<p className="course-search-section-note">
-												<strong>Comments:</strong> {section.comments}
-											</p>
-										) : null}
-									</article>
-								))}
-							</div>
-						</section>
-					</div>
+											{section.professors.length > 0 ? (
+												<p className="course-search-section-professors">
+													{section.professors.join(" · ")}
+												</p>
+											) : null}
+
+											<div className="course-search-meeting-list">
+												{section.meetings.map((meeting, index) => (
+													<div
+														key={`${section.index}-${meeting.day}-${meeting.start}-${meeting.room}-${index}`}
+														className="course-search-meeting-row">
+														<div>
+															<p className="course-search-meeting-window">
+																{formatMeetingWindow(meeting)}
+															</p>
+															<p className="course-search-meeting-location">
+																{formatMeetingLocation(meeting)}
+															</p>
+														</div>
+														<span className="course-search-meeting-mode">
+															{meeting.mode.trim() === "" ? "Mode TBA" : meeting.mode}
+														</span>
+													</div>
+												))}
+											</div>
+
+											{section.crossListings?.length ? (
+												<p className="course-search-section-note">
+													Cross-listed as{" "}
+													{section.crossListings
+														.map(
+															crossListing =>
+																`${crossListing.dept}:${crossListing.number}:${crossListing.section} (${crossListing.index})`
+														)
+														.join(" · ")}
+												</p>
+											) : null}
+											{section.openTo ? (
+												<p className="course-search-section-note">
+													<strong>Open to:</strong> {section.openTo}
+												</p>
+											) : null}
+											{section.eligibility ? (
+												<p className="course-search-section-note">
+													<strong>Eligibility:</strong> {section.eligibility}
+												</p>
+											) : null}
+											{section.notes ? (
+												<p className="course-search-section-note">
+													<strong>Notes:</strong> {section.notes}
+												</p>
+											) : null}
+											{section.comments ? (
+												<p className="course-search-section-note">
+													<strong>Comments:</strong> {section.comments}
+												</p>
+											) : null}
+										</article>
+									))}
+								</div>
+							</section>
+						</div>
+					) : (
+						<div className="course-search-empty-state">
+							<h3>No matches yet.</h3>
+							<p>Refine the query to surface a course information panel from the catalog snapshot.</p>
+							<button
+								type="button"
+								className="course-search-clear-button"
+								onClick={() => setSearchQuery("")}>
+								Clear search
+							</button>
+						</div>
+					)
 				) : (
 					<div className="course-search-empty-state">
-						<h3>No matches yet.</h3>
-						<p>Refine the query to surface a course information panel from the catalog snapshot.</p>
-						<button
-							type="button"
-							className="course-search-clear-button"
-							onClick={() => setSearchQuery("")}>
-							Clear search
-						</button>
+						<h3>Start with a search.</h3>
+						<p>
+							Search by course code, title, instructor, or location to pull up the course details you
+							need.
+						</p>
 					</div>
 				)}
 			</section>
