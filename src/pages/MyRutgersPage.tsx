@@ -23,9 +23,9 @@ export default function MyRutgersPage() {
 		: "service-grid-panel service-grid-panel-horizontal";
 	const widgetShellClassName = hasSelectedService
 		? "myrutgers-widget-shell visible"
-		: renderedService !== null
-			? "myrutgers-widget-shell closing"
-			: "myrutgers-widget-shell";
+		: renderedService === null
+			? "myrutgers-widget-shell"
+			: "myrutgers-widget-shell closing";
 
 	useEffect(() => {
 		void prefetchAcademicCatalog();
@@ -75,12 +75,12 @@ export default function MyRutgersPage() {
 					</div>
 					<h1>Plan classes faster.</h1>
 					<p className="myrutgers-lead">
-						Search the catalog, compare schedules, and move into WebReg without stitching together separate
-						Rutgers tabs.
+						Search the catalog, check academic dates, compare schedules, and move into WebReg without
+						stitching together separate Rutgers tabs.
 					</p>
 					<p className="myrutgers-supporting-copy">
-						Course search lives directly in RU Tap, while Course Schedule Planner and WebReg stay close by
-						when you need the official Rutgers tools.
+						Course search and academic calendar views live directly in RU Tap, while Course Schedule Planner
+						and WebReg stay close by when you need the official Rutgers tools.
 					</p>
 				</header>
 

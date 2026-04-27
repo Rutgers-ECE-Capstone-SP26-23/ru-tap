@@ -1,3 +1,3 @@
-type MyRutgersModule = "course-search";
+type MyRutgersModule = "academic-calendar" | "course-search";
 
 export type { MyRutgersModule as default };

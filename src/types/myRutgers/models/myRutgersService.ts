@@ -1,14 +1,24 @@
-import type MyRutgersEmbedMode from "@/types/myRutgers/models/myRutgersEmbedMode.ts";
 import type MyRutgersModule from "@/types/myRutgers/models/myRutgersModule.ts";
 
-type MyRutgersService = {
+type MyRutgersServiceBase = Readonly<{
 	id: string;
 	title: string;
 	summary: string;
-	embedMode: MyRutgersEmbedMode;
-	embedUrl?: string;
-	module?: MyRutgersModule;
-	notes?: string;
-};
+}>;
+
+type MyRutgersIframeService = MyRutgersServiceBase &
+	Readonly<{
+		embedMode: "iframe";
+		embedUrl: string;
+	}>;
+
+type MyRutgersModuleService = MyRutgersServiceBase &
+	Readonly<{
+		embedMode: "module";
+		module: MyRutgersModule;
+		sourceUrl?: string;
+	}>;
+
+type MyRutgersService = MyRutgersIframeService | MyRutgersModuleService;
 
 export type { MyRutgersService as default };

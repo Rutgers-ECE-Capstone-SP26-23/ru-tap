@@ -1,3 +1,4 @@
+import { academicCalendarSourceUrl } from "@/data/academicCalendar.ts";
 import type MyRutgersService from "@/types/myRutgers/models/myRutgersService.ts";
 
 export const myRutgersServices: readonly MyRutgersService[] = [
@@ -6,8 +7,15 @@ export const myRutgersServices: readonly MyRutgersService[] = [
 		title: "Course Search",
 		summary: "Look up sections, instructors, meeting times, and rooms.",
 		embedMode: "module",
-		module: "course-search",
-		notes: "Built on a condensed Rutgers SOC snapshot for faster catalog browsing."
+		module: "course-search"
+	},
+	{
+		id: "academic-calendar",
+		title: "Academic Calendar",
+		summary: "Check semester starts, breaks, reading days, exams, and commencement.",
+		embedMode: "module",
+		module: "academic-calendar",
+		sourceUrl: academicCalendarSourceUrl
 	},
 	{
 		id: "course-schedule-planner",

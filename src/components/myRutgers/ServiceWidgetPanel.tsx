@@ -1,5 +1,5 @@
+import AcademicCalendarModule from "@/components/myRutgers/AcademicCalendarModule.tsx";
 import CourseSearchModule from "@/components/myRutgers/CourseSearchModule.tsx";
-import WidgetPlaceholder from "@/components/myRutgers/WidgetPlaceholder.tsx";
 import "@/styles/components/ServiceWidgetPanel.css";
 import type ServiceWidgetPanelProps from "@/types/components/props/serviceWidgetPanelProps.ts";
 import { useLayoutEffect, useRef } from "react";
@@ -59,7 +59,7 @@ export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps)
 
 	const widgetPanelBodyClassName =
 		service.embedMode === "module" ? "widget-panel-body widget-panel-body-module" : "widget-panel-body";
-	const isIframeService = service.embedMode === "iframe" && service.embedUrl !== undefined;
+	const externalUrl = service.embedMode === "iframe" ? service.embedUrl : service.sourceUrl;
 
 	return (
 		<section ref={widgetPanelRef} className="widget-panel" aria-label="Selected widget panel">
@@ -68,10 +68,10 @@ export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps)
 					<h2>{service.title}</h2>
 					<p>{service.summary}</p>
 				</div>
-				{isIframeService ? (
+				{externalUrl ? (
 					<a
 						className="widget-panel-external-link"
-						href={service.embedUrl}
+						href={externalUrl}
 						target="_blank"
 						rel="noreferrer noopener">
 						Open full page
@@ -80,7 +80,7 @@ export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps)
 			</header>
 
 			<div className={widgetPanelBodyClassName}>
-				{service.embedMode === "iframe" && service.embedUrl ? (
+				{service.embedMode === "iframe" ? (
 					<iframe
 						className="service-frame"
 						title={`${service.title} Rutgers surface`}
@@ -89,10 +89,10 @@ export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps)
 						referrerPolicy="no-referrer"
 						sandbox="allow-forms allow-modals allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
 					/>
-				) : service.embedMode === "module" && service.module === "course-search" ? (
+				) : service.module === "course-search" ? (
 					<CourseSearchModule />
 				) : (
-					<WidgetPlaceholder service={service} />
+					<AcademicCalendarModule />
 				)}
 			</div>
 		</section>
