@@ -3,7 +3,7 @@
 This file is the living snapshot of the repo as it exists right now. Update it when routes, architecture, assets,
 verification status, product scope, or active backlog meaningfully change.
 
-Last updated: 2026-04-22T10:13:38-04:00
+Last updated: 2026-04-27T18:42:14-04:00
 
 ## Project Snapshot
 
@@ -36,13 +36,13 @@ Last updated: 2026-04-22T10:13:38-04:00
 
 ## Current Route Coverage
 
-| Route / Surface | State                 | Current Implementation                                                         | Notes                                                                                          |
-| --------------- | --------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `/`             | Implemented           | Landing page with RU Tap product framing and preview launch links              | Static product surface only                                                                    |
-| `/myrutgers`    | Implemented prototype | Academic service directory plus preview panel with a live course-search module | Condensed Rutgers SOC data drives course search; CSP and WebReg remain Rutgers-hosted handoffs |
-| `/rooms`        | Implemented prototype | Classroom finder and room-detail directory driven by Rutgers room data         | Finder/details UI only; no live indoor map or availability layer yet                           |
-| `/transit`      | Implemented prototype | Live Rutgers transit board using the Passio feed                               | Most actively iterated surface in the repo right now                                           |
-| Maps / rooms    | Partially started     | Room finder page exists and is backed by `src/data/rooms.ts`                   | Maps/wayfinding and live availability are still not implemented                                |
+| Route / Surface | State                 | Current Implementation                                                                              | Notes                                                                                          |
+| --------------- | --------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `/`             | Implemented           | Landing page with RU Tap product framing and preview launch links                                   | Static product surface only                                                                    |
+| `/myrutgers`    | Implemented prototype | Academic service directory plus preview panel with live course-search and academic-calendar modules | Condensed Rutgers SOC data drives course search; CSP and WebReg remain Rutgers-hosted handoffs |
+| `/rooms`        | Implemented prototype | Classroom finder and room-detail directory driven by Rutgers room data                              | Finder/details UI only; no live indoor map or availability layer yet                           |
+| `/transit`      | Implemented prototype | Live Rutgers transit board using the Passio feed                                                    | Most actively iterated surface in the repo right now                                           |
+| Maps / rooms    | Partially started     | Room finder page exists and is backed by `src/data/rooms.ts`                                        | Maps/wayfinding and live availability are still not implemented                                |
 
 ## Runtime and Build Architecture
 
@@ -141,8 +141,9 @@ Last updated: 2026-04-22T10:13:38-04:00
     - home link and eyebrow now share one inline metadata row
     - routed-page hero sizing and spacing now follow the landing-page baseline
     - main heading: `Plan classes faster.`
-    - lead copy summarizing catalog search, schedule planning, and WebReg
-    - supporting copy explaining that course search lives in RU Tap while CSP and WebReg stay close by
+    - lead copy summarizing catalog search, academic dates, schedule planning, and WebReg
+    - supporting copy explaining that course search and academic calendar views live in RU Tap while CSP and WebReg stay
+      close by
 - Current layout:
     - initial state: full-width tool selector
     - selected state: left selector rail plus right preview/widget panel
@@ -158,21 +159,20 @@ Last updated: 2026-04-22T10:13:38-04:00
     - the tool-selection transition now animates instead of snapping, with the widget workspace sliding in and out as
       the layout changes
 - Current service mix:
-    - count: 3
-    - the course-search service uses `embedMode: "module"`
+    - count: 4
+    - the Course Search and Academic Calendar services use `embedMode: "module"`
     - Course Schedule Planner and WebReg use `embedMode: "iframe"`
     - the iframe-backed services keep authentication on Rutgers and provide a direct external fallback if framing is
       blocked
 - Current services in the fixture set:
     - Course Search
+    - Academic Calendar
     - Course Schedule Planner
     - WebReg
 - Current component path:
     - `MyRutgersPage` -> `src/components/myRutgers/ServiceButtonGrid.tsx` -> `ServiceButtonCard`
-    - `MyRutgersPage` -> `src/components/myRutgers/ServiceWidgetPanel.tsx` -> `CourseSearchModule`, `WidgetPlaceholder`,
-      or iframe
-    - the prior multi-result course-search browser now lives undeployed at
-      `src/components/myRutgers/undeployed/ArchivedCourseSearchModule.tsx`
+    - `MyRutgersPage` -> `src/components/myRutgers/ServiceWidgetPanel.tsx` -> `CourseSearchModule`,
+      `AcademicCalendarModule`, or iframe
 - Current styling posture:
     - intentionally simpler two-panel layout after earlier rejected redesigns
     - the tool selector now starts as a horizontal grid and becomes a vertical rail after selection
@@ -184,8 +184,7 @@ Last updated: 2026-04-22T10:13:38-04:00
     - the live course-search module is now a search-driven information panel rather than a full browsable course
       directory
     - the live course-search module no longer renders the full course list or campus filter chip row
-    - the previous two-panel course-search browser has been archived as undeployed code for later iteration instead of
-      remaining on the shipped path
+    - the previous two-panel course-search browser has been removed from source after the shipped path stabilized
     - the page now includes the shared floating back-to-top control
     - component prop types now live under `src/types/components/props/`
     - myRutgers model types now live under `src/types/myRutgers/models/`
@@ -235,6 +234,13 @@ Last updated: 2026-04-22T10:13:38-04:00
 - `MyRutgersPage` now warms the academics cache on mount via `prefetchAcademicCatalog()`.
 - The course-search campus filter is now section-aware in the details pane and result summaries, so a campus-filtered
   course only shows the sections that actually match the selected campus.
+- Course-search meeting times now format against `America/New_York` so Rutgers class times default to US Eastern Time
+  with daylight-saving behavior from the IANA time zone database.
+- A local Academic Calendar module is now wired into `/myrutgers`, backed by typed static data from the Rutgers Academic
+  Scheduling academic-calendar page for 2025-2026 through 2027-2028 and linked back to the official source.
+- Source cleanup removed the undeployed archived course-search module, the old unused landing `CoreExperienceCard`
+  stack, the generic myRutgers widget placeholder, orphan content/prop types, and the stale placeholder embed-mode
+  branch.
 
 ## Component Layout Status
 
@@ -246,11 +252,10 @@ Last updated: 2026-04-22T10:13:38-04:00
     - `src/components/transit/`
 - All moved component modules now use default exports.
 - Current folder split:
-    - `landing/`: `CoreExperienceCard`, `FloatingTopButton`
+    - `landing/`: `FloatingTopButton`
     - `layout/`: `PanelCard`, `SectionBlock`
-    - `myRutgers/`: `CourseSearchModule`, `ServiceButtonCard`, `ServiceButtonGrid`, `ServiceWidgetPanel`,
-      `WidgetPlaceholder`
-    - `myRutgers/undeployed/`: `ArchivedCourseSearchModule`
+    - `myRutgers/`: `AcademicCalendarModule`, `CourseSearchModule`, `ServiceButtonCard`, `ServiceButtonGrid`,
+      `ServiceWidgetPanel`
     - `rooms/`: `RoomsDetailsPanel`, `RoomsDirectoryRow`, `RoomsDirectoryTable`, `RoomsMetricCard`, `RoomsSortButton`
     - `transit/`: `TransitBusCard`, `TransitMetricCard`, `TransitRouteButton`, `TransitRouteGroup`
 
@@ -456,6 +461,7 @@ Last updated: 2026-04-22T10:13:38-04:00
 ## Data and Type Layout Status
 
 - myRutgers fixture metadata lives in `src/data/myRutgersServices.ts`.
+- Academic calendar data lives in `src/data/academicCalendar.ts`.
 - Transit feed adaptation lives in `src/data/transit.ts`.
 - Rooms data scaffolding lives in `src/data/rooms.ts`.
 - Type modules under `src/types/` now follow a one-type-per-file default-export convention.
@@ -473,8 +479,10 @@ Last updated: 2026-04-22T10:13:38-04:00
     - page-local room types in `src/types/rooms/pages/`: `roomSortDirection.ts`, `roomSortKey.ts`
 - myRutgers model types now live under `src/types/myRutgers/models/`:
     - `myRutgersService.ts`
-    - `myRutgersServiceStatus.ts`
-    - `myRutgersEmbedMode.ts`
+    - `myRutgersModule.ts`
+- Academic calendar model types now live under `src/types/academics/models/`:
+    - `academicCalendarEvent.ts`
+    - `academicCalendarYear.ts`
 - Transit types now live under role-based folders in `src/types/transit/`:
 - Current transit type files include:
     - feed-shape types in `src/types/transit/feed/`: `passioFeed.ts`, `passioLine.ts`, `passioStation.ts`,
@@ -564,14 +572,14 @@ Last updated: 2026-04-22T10:13:38-04:00
 - myRutgers-page styles live in `src/styles/pages/myRutgersPage.css`.
 - transit-page styles live in `src/styles/pages/transitPage.css`.
 - Component-specific styles now live in `src/styles/components/` for:
-    - `CoreExperienceCard`
+    - `AcademicCalendarModule`
+    - `CourseSearchModule`
     - `FloatingTopButton`
     - `PanelCard`
     - `SectionBlock`
     - `ServiceButtonCard`
     - `ServiceButtonGrid`
     - `ServiceWidgetPanel`
-    - `WidgetPlaceholder`
 - The legacy root stylesheets `src/App.css` and `src/index.css` have been removed.
 - No static component CSS remains stranded inside component TSX files.
 - The remaining `style={...}` usage is intentional and dynamic:
@@ -645,71 +653,72 @@ Testing status:
 - No analytics or telemetry layer
 - No test suite
 - `Suspense` route fallback is still `null`
-- Course Search is a live local module, and Course Schedule Planner plus WebReg are live Rutgers iframe surfaces
+- Course Search and Academic Calendar are live local modules, and Course Schedule Planner plus WebReg are live Rutgers
+  iframe surfaces
 - transit still has no map, stop search, favorites, or rideshare layer
 
 ## Important Files and Responsibilities
 
-| File                                              | Current Responsibility                                                                  |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `index.html`                                      | Base HTML document, app metadata, manifest link, favicon link                           |
-| `src/main.tsx`                                    | React mount point and production service-worker registration                            |
-| `src/App.tsx`                                     | Manual pathname routing and lazy page loading                                           |
-| `src/utils/basePath.ts`                           | Base-aware path generation and pathname normalization                                   |
-| `src/pages/LandingPage.tsx`                       | RU Tap landing page content and section composition                                     |
-| `src/pages/MyRutgersPage.tsx`                     | myRutgers page state, layout, and service selection                                     |
-| `src/pages/RoomsPage.tsx`                         | Room finder state, filtering, sorting, and top-level composition                        |
-| `src/pages/TransitPage.tsx`                       | Transit page state, route selection, mobile/desktop behavior, and top-level composition |
-| `src/components/landing/*`                        | Landing-page-specific reusable UI pieces                                                |
-| `src/components/layout/*`                         | Shared structural card/section building blocks                                          |
-| `src/components/myRutgers/*`                      | myRutgers selector and preview-panel components                                         |
-| `src/components/myRutgers/CourseSearchModule.tsx` | Live search-driven myRutgers course-results information panel                           |
-| `src/components/myRutgers/undeployed/ArchivedCourseSearchModule.tsx` | Undeployed archive of the earlier two-panel course-search browser |
-| `src/components/rooms/*`                          | Rooms-presentational UI components used by `RoomsPage.tsx`                              |
-| `src/components/transit/*`                        | Transit-presentational UI components used by `TransitPage.tsx`                          |
-| `scripts/buildSocCatalog.mjs`                     | Rutgers SOC fetch/recompose/write pipeline for the condensed academics dataset          |
-| `public/data/academics/2026/9/NB/*.json`          | Generated condensed academic catalog snapshot for the New Brunswick Fall 2026 dataset   |
-| `src/data/academics.ts`                           | Base-aware condensed academic catalog URL building and loading helper                   |
-| `src/data/myRutgersServices.ts`                   | Fixture metadata for academic services                                                  |
-| `src/data/transit.ts`                             | Rutgers transit feed fetch, filtering, normalization, and snapshot merging              |
-| `src/data/rooms.ts`                               | Typed rooms dataset grouped by campus                                                   |
-| `src/hooks/useMediaQuery.ts`                      | Shared media-query subscription hook                                                    |
-| `src/hooks/transit/useTransitLocation.ts`         | Transit geolocation request and fallback behavior                                       |
-| `src/hooks/transit/useTransitRouteSelection.ts`   | Transit route selection, collapse, minimize, and mobile autoscroll state                |
-| `src/hooks/transit/useTransitSnapshot.ts`         | Transit snapshot loading, refresh cadence, and manual refresh handling                  |
-| `src/types/content/*`                             | Landing/content-facing shared types                                                     |
-| `src/types/components/props/*`                    | Component prop types extracted from component modules                                   |
-| `src/types/academics/models/*`                    | Condensed academics dataset model types                                                 |
-| `src/types/rooms/models/*`                        | Rooms domain model types used by `src/data/rooms.ts` and the rooms page                 |
-| `src/types/rooms/props/*`                         | Rooms UI prop types                                                                     |
-| `src/types/rooms/pages/*`                         | Rooms page-local sort types                                                             |
-| `src/types/myRutgers/models/*`                    | myRutgers enums and service model types                                                 |
-| `src/types/transit/feed/*`                        | Passio feed-shape types                                                                 |
-| `src/types/transit/hooks/*`                       | Transit hook parameter types                                                            |
-| `src/types/transit/models/*`                      | Transit app-model types                                                                 |
-| `src/types/transit/props/*`                       | Transit UI prop types                                                                   |
-| `src/types/transit/pages/*`                       | Transit page-local state and disclosure types                                           |
-| `src/types/transit/data/*`                        | Transit data-layer helper types                                                         |
-| `src/utils/transit/boardViewState.ts`             | Transit route-board ordering, peek-state, and layout derivation                         |
-| `src/utils/transit/display.ts`                    | Transit display formatting and route-color style helpers                                |
-| `src/types/serviceWorker/globals/*`               | Service-worker global-scope typing helpers                                              |
-| `src/types/serviceWorker/events/*`                | Service-worker event types                                                              |
-| `src/sw.ts`                                       | Service-worker runtime logic                                                            |
-| `src/assets/favicon-new.svg`                      | Working animated favicon redesign asset                                                 |
-| `src/assets/favicon-new-still.svg`                | Static 1-second SVG snapshot of the working favicon redesign                            |
-| `src/assets/favicon-new-still.png`                | 4096x4096 PNG export of the working favicon redesign still                              |
-| `src/styles/global/index.css`                     | Active global styling entry                                                             |
-| `src/styles/pages/landingPage.css`                | Landing page styling                                                                    |
-| `src/styles/pages/myRutgersPage.css`              | myRutgers page styling                                                                  |
-| `src/styles/pages/roomsPage.css`                  | Room finder page styling                                                                |
-| `src/styles/pages/transitPage.css`                | Transit page styling                                                                    |
-| `src/styles/components/*`                         | Component-specific stylesheets                                                          |
-| `src/styles/components/CourseSearchModule.css`    | Styling for the live search-results-only myRutgers course panel                         |
-| `src/styles/components/ArchivedCourseSearchModule.css` | Frozen styling for the undeployed archived course-search browser                    |
-| `public/manifest.webmanifest`                     | Install metadata                                                                        |
-| `public/favicon.svg`                              | Animated app icon / favicon                                                             |
-| `vite.config.ts`                                  | Vite config, aliasing, Pages base logic, and service-worker build wiring                |
-| `.github/workflows/deploy-pages.yml`              | GitHub Pages build-and-deploy workflow                                                  |
+| File                                                  | Current Responsibility                                                                  |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `index.html`                                          | Base HTML document, app metadata, manifest link, favicon link                           |
+| `src/main.tsx`                                        | React mount point and production service-worker registration                            |
+| `src/App.tsx`                                         | Manual pathname routing and lazy page loading                                           |
+| `src/utils/basePath.ts`                               | Base-aware path generation and pathname normalization                                   |
+| `src/pages/LandingPage.tsx`                           | RU Tap landing page content and section composition                                     |
+| `src/pages/MyRutgersPage.tsx`                         | myRutgers page state, layout, and service selection                                     |
+| `src/pages/RoomsPage.tsx`                             | Room finder state, filtering, sorting, and top-level composition                        |
+| `src/pages/TransitPage.tsx`                           | Transit page state, route selection, mobile/desktop behavior, and top-level composition |
+| `src/components/landing/*`                            | Landing-page-specific reusable UI pieces                                                |
+| `src/components/layout/*`                             | Shared structural card/section building blocks                                          |
+| `src/components/myRutgers/*`                          | myRutgers selector and preview-panel components                                         |
+| `src/components/myRutgers/CourseSearchModule.tsx`     | Live search-driven myRutgers course-results information panel                           |
+| `src/components/myRutgers/AcademicCalendarModule.tsx` | Live myRutgers academic-calendar information panel                                      |
+| `src/components/rooms/*`                              | Rooms-presentational UI components used by `RoomsPage.tsx`                              |
+| `src/components/transit/*`                            | Transit-presentational UI components used by `TransitPage.tsx`                          |
+| `scripts/buildSocCatalog.mjs`                         | Rutgers SOC fetch/recompose/write pipeline for the condensed academics dataset          |
+| `public/data/academics/2026/9/NB/*.json`              | Generated condensed academic catalog snapshot for the New Brunswick Fall 2026 dataset   |
+| `src/data/academics.ts`                               | Base-aware condensed academic catalog URL building and loading helper                   |
+| `src/data/academicCalendar.ts`                        | Static academic-calendar event data                                                     |
+| `src/data/myRutgersServices.ts`                       | Fixture metadata for academic services                                                  |
+| `src/data/transit.ts`                                 | Rutgers transit feed fetch, filtering, normalization, and snapshot merging              |
+| `src/data/rooms.ts`                                   | Typed rooms dataset grouped by campus                                                   |
+| `src/hooks/useMediaQuery.ts`                          | Shared media-query subscription hook                                                    |
+| `src/hooks/transit/useTransitLocation.ts`             | Transit geolocation request and fallback behavior                                       |
+| `src/hooks/transit/useTransitRouteSelection.ts`       | Transit route selection, collapse, minimize, and mobile autoscroll state                |
+| `src/hooks/transit/useTransitSnapshot.ts`             | Transit snapshot loading, refresh cadence, and manual refresh handling                  |
+| `src/types/content/*`                                 | Landing/content-facing shared types                                                     |
+| `src/types/components/props/*`                        | Component prop types extracted from component modules                                   |
+| `src/types/academics/models/*`                        | Condensed academics dataset model types                                                 |
+| `src/types/rooms/models/*`                            | Rooms domain model types used by `src/data/rooms.ts` and the rooms page                 |
+| `src/types/rooms/props/*`                             | Rooms UI prop types                                                                     |
+| `src/types/rooms/pages/*`                             | Rooms page-local sort types                                                             |
+| `src/types/myRutgers/models/*`                        | myRutgers enums and service model types                                                 |
+| `src/types/transit/feed/*`                            | Passio feed-shape types                                                                 |
+| `src/types/transit/hooks/*`                           | Transit hook parameter types                                                            |
+| `src/types/transit/models/*`                          | Transit app-model types                                                                 |
+| `src/types/transit/props/*`                           | Transit UI prop types                                                                   |
+| `src/types/transit/pages/*`                           | Transit page-local state and disclosure types                                           |
+| `src/types/transit/data/*`                            | Transit data-layer helper types                                                         |
+| `src/utils/transit/boardViewState.ts`                 | Transit route-board ordering, peek-state, and layout derivation                         |
+| `src/utils/transit/display.ts`                        | Transit display formatting and route-color style helpers                                |
+| `src/types/serviceWorker/globals/*`                   | Service-worker global-scope typing helpers                                              |
+| `src/types/serviceWorker/events/*`                    | Service-worker event types                                                              |
+| `src/sw.ts`                                           | Service-worker runtime logic                                                            |
+| `src/assets/favicon-new.svg`                          | Working animated favicon redesign asset                                                 |
+| `src/assets/favicon-new-still.svg`                    | Static 1-second SVG snapshot of the working favicon redesign                            |
+| `src/assets/favicon-new-still.png`                    | 4096x4096 PNG export of the working favicon redesign still                              |
+| `src/styles/global/index.css`                         | Active global styling entry                                                             |
+| `src/styles/pages/landingPage.css`                    | Landing page styling                                                                    |
+| `src/styles/pages/myRutgersPage.css`                  | myRutgers page styling                                                                  |
+| `src/styles/pages/roomsPage.css`                      | Room finder page styling                                                                |
+| `src/styles/pages/transitPage.css`                    | Transit page styling                                                                    |
+| `src/styles/components/*`                             | Component-specific stylesheets                                                          |
+| `src/styles/components/CourseSearchModule.css`        | Styling for the live search-results-only myRutgers course panel                         |
+| `public/manifest.webmanifest`                         | Install metadata                                                                        |
+| `public/favicon.svg`                                  | Animated app icon / favicon                                                             |
+| `vite.config.ts`                                      | Vite config, aliasing, Pages base logic, and service-worker build wiring                |
+| `.github/workflows/deploy-pages.yml`                  | GitHub Pages build-and-deploy workflow                                                  |
 
 ## Next Queued Work
 
@@ -721,7 +730,7 @@ High-signal next steps currently visible in the repo:
 - add an actual maps / rooms surface on top of `src/data/rooms.ts`
 - deepen the rooms surface with indoor maps, floorplans, availability, or wayfinding
 - deepen transit with a map, stop search, favorites, or rideshare integration
-- replace the remaining myRutgers placeholders with real preview widgets when product scope allows
+- continue replacing Rutgers handoff surfaces with local modules when product scope allows
 - decide how the condensed academics catalog should be sharded, cached, and expanded beyond the first course-search
   module
 - decide whether to improve the blank `Suspense` fallback
