@@ -6,7 +6,7 @@ import type Pillar from "@/types/content/pillar.ts";
 import { withBasePath } from "@/utils/basePath.ts";
 import scrollPageToTop from "@/utils/scrollToTop.ts";
 
-type CoreExperienceCard = Readonly<{
+type CoreExperienceLink = Readonly<{
 	cta: string;
 	description: string;
 	href: string;
@@ -29,7 +29,7 @@ const pillars: readonly Pillar[] = [
 	}
 ];
 
-const coreExperienceCards: readonly CoreExperienceCard[] = [
+const coreExperienceCards: readonly CoreExperienceLink[] = [
 	{
 		title: "Academics",
 		description:
