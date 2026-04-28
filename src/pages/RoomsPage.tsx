@@ -60,7 +60,7 @@ function sortRooms(rooms: readonly RoomListing[], sortKey: RoomSortKey, sortDire
 	const directionMultiplier = sortDirection === "asc" ? 1 : -1;
 
 	return [...rooms].sort((leftRoom, rightRoom) => {
-		let comparison = 0;
+		let comparison: number;
 
 		switch (sortKey) {
 			case "building":

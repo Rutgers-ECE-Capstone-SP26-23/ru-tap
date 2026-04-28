@@ -184,13 +184,9 @@ async function loadAcademicCatalogInternal(
 	}
 
 	const recordId = getAcademicCatalogCacheRecordId(catalogKey);
-	let cachedRecord: AcademicCatalogCacheRecord | null = null;
-
-	try {
-		cachedRecord = await readAcademicCatalogCacheRecord(recordId);
-	} catch {
-		cachedRecord = null;
-	}
+	const cachedRecord: AcademicCatalogCacheRecord | null = await readAcademicCatalogCacheRecord(recordId).catch(
+		() => null
+	);
 
 	if (cachedRecord === null) {
 		const dataset = await fetchAcademicCatalogDataset(catalogKey);
@@ -204,7 +200,7 @@ async function loadAcademicCatalogInternal(
 		return dataset;
 	}
 
-	let latestManifest: AcademicCatalogManifest | null = null;
+	let latestManifest: AcademicCatalogManifest;
 
 	try {
 		latestManifest = await fetchAcademicCatalogManifest(catalogKey);
