@@ -175,7 +175,7 @@ export const roomsByCampus = {
 		},
 		"BST-114A": {
 			building: "BEST West Residence Hall",
-			type: "General Purpose Classroom",
+			type: "Large Classroom",
 			capacity: 50,
 			address: {
 				street: "54 Bevier Road",
@@ -187,7 +187,7 @@ export const roomsByCampus = {
 		},
 		"BST-116": {
 			building: "BEST West Residence Hall",
-			type: "Chancellor Learning Space",
+			type: "Seminar Room",
 			capacity: 8,
 			address: {
 				street: "54 Bevier Road",
@@ -234,7 +234,7 @@ export const roomsByCampus = {
 			seating: "Swivel Chair"
 		},
 		"COR-101": {
-			building: "Computing Research & Education Building",
+			building: "Computing Research & Education Building (CoRE)",
 			type: "Lecture Hall",
 			capacity: 113,
 			address: {
@@ -250,7 +250,7 @@ export const roomsByCampus = {
 			type: "Lecture Hall",
 			capacity: 165,
 			address: {
-				street: "96 Frelinghuysen Road",
+				street: "98 Brett Road",
 				city: "Piscataway",
 				state: "NJ",
 				zip: "08854"
@@ -258,7 +258,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"FBO-108": {
-			building: "Fiber Optic Building",
+			building: "Fiber Optic Materials Research Building",
 			type: "Lecture Hall",
 			capacity: 173,
 			address: {
@@ -310,7 +310,7 @@ export const roomsByCampus = {
 			type: "Lecture Hall",
 			capacity: 136,
 			address: {
-				street: " 160 Frelinghuysen Road",
+				street: "160 Frelinghuysen Road",
 				city: "Piscataway",
 				state: "NJ",
 				zip: "08854"
@@ -322,7 +322,7 @@ export const roomsByCampus = {
 			type: "Lecture Hall",
 			capacity: 136,
 			address: {
-				street: " 160 Frelinghuysen Road",
+				street: "160 Frelinghuysen Road",
 				city: "Piscataway",
 				state: "NJ",
 				zip: "08854"
@@ -330,11 +330,11 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"PHY-001": {
-			building: "Physics Building",
+			building: "Physics",
 			type: "Auditorium",
 			capacity: 316,
 			address: {
-				street: " 120 Frelinghuysen Road",
+				street: "120 Frelinghuysen Road",
 				city: "Piscataway",
 				state: "NJ",
 				zip: "08854"
@@ -896,7 +896,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"BH-211": {
-			building: "Bishop Hall",
+			building: "Bishop House",
 			type: "Seminar Room",
 			capacity: 20,
 			address: {
@@ -933,7 +933,7 @@ export const roomsByCampus = {
 		},
 		"CA-A3": {
 			building: "Campbell Hall",
-			type: "Small Classroom",
+			type: "Large Classroom",
 			capacity: 65,
 			address: {
 				street: "617 George Street",
@@ -968,7 +968,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CI-101": {
-			building: "School of Communication & Information",
+			building: "School of Communications & Information",
 			type: "Small Classroom",
 			capacity: 40,
 			address: {
@@ -980,7 +980,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CI-103": {
-			building: "School of Communication & Information",
+			building: "School of Communications & Information",
 			type: "Small Classroom",
 			capacity: 40,
 			address: {
@@ -992,7 +992,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CI-201": {
-			building: "School of Communication & Information",
+			building: "School of Communications & Information",
 			type: "Small Classroom",
 			capacity: 40,
 			address: {
@@ -1004,7 +1004,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CI-203": {
-			building: "School of Communication & Information",
+			building: "School of Communications & Information",
 			type: "Small Classroom",
 			capacity: 40,
 			address: {
@@ -1016,7 +1016,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CI-212": {
-			building: "School of Communication & Information",
+			building: "School of Communications & Information",
 			type: "Large Classroom",
 			capacity: 95,
 			address: {
@@ -1125,7 +1125,7 @@ export const roomsByCampus = {
 		},
 		"FH-B1": {
 			building: "Frelinghuysen Hall",
-			type: "Large Classroom",
+			type: "Small Classroom",
 			capacity: 45,
 			address: {
 				street: "611 George Street",
@@ -1185,7 +1185,7 @@ export const roomsByCampus = {
 		},
 		"FH-B6": {
 			building: "Frelinghuysen Hall",
-			type: "Large Classroom",
+			type: "Small Classroom",
 			capacity: 45,
 			address: {
 				street: "611 George Street",
@@ -1197,7 +1197,7 @@ export const roomsByCampus = {
 		},
 		"HC-E128": {
 			building: "Honors College",
-			type: "Seminar Classroom",
+			type: "Seminar Room",
 			capacity: 20,
 			address: {
 				street: "5 Seminary Place",
@@ -1209,7 +1209,7 @@ export const roomsByCampus = {
 		},
 		"HC-N106": {
 			building: "Honors College",
-			type: "Seminar Classroom",
+			type: "Seminar Room",
 			capacity: 20,
 			address: {
 				street: "5 Seminary Place",
@@ -1221,7 +1221,7 @@ export const roomsByCampus = {
 		},
 		"HC-S120": {
 			building: "Honors College",
-			type: "Seminar Classroom",
+			type: "Seminar Room",
 			capacity: 20,
 			address: {
 				street: "5 Seminary Place",
@@ -1233,7 +1233,7 @@ export const roomsByCampus = {
 		},
 		"HC-S124": {
 			building: "Honors College",
-			type: "Seminar Classroom",
+			type: "Seminar Room",
 			capacity: 20,
 			address: {
 				street: "5 Seminary Place",
@@ -1245,7 +1245,7 @@ export const roomsByCampus = {
 		},
 		"HC-S126": {
 			building: "Honors College",
-			type: "Seminar Classroom",
+			type: "Seminar Room",
 			capacity: 20,
 			address: {
 				street: "5 Seminary Place",
@@ -1377,7 +1377,7 @@ export const roomsByCampus = {
 		},
 		"HH-B5": {
 			building: "Hardenbergh Hall",
-			type: "Small Classroom",
+			type: "Large Classroom",
 			capacity: 65,
 			address: {
 				street: "615 George Street",
@@ -1737,8 +1737,8 @@ export const roomsByCampus = {
 		},
 		"SC-201": {
 			building: "Scott Hall",
-			type: "Small Classroom",
-			capacity: 35,
+			type: "Seminar Room",
+			capacity: 30,
 			address: {
 				street: "43 College Avenue",
 				city: "New Brunswick",
@@ -1979,7 +1979,7 @@ export const roomsByCampus = {
 		},
 		"BIO-205": {
 			building: "Biological Sciences",
-			type: "Lecture Hall",
+			type: "Small Classroom",
 			capacity: 49,
 			address: {
 				street: "1 Chemistry Drive",
@@ -2014,7 +2014,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CDL-102": {
-			building: "Cook/Douglass Lecture Hall",
+			building: "Cook / Douglass Lecture Hall",
 			type: "Lecture Hall",
 			capacity: 120,
 			address: {
@@ -2026,7 +2026,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CDL-103": {
-			building: "Cook/Douglass Lecture Hall",
+			building: "Cook / Douglass Lecture Hall",
 			type: "Large Classroom",
 			capacity: 80,
 			address: {
@@ -2038,7 +2038,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CDL-109": {
-			building: "Cook/Douglass Lecture Hall",
+			building: "Cook / Douglass Lecture Hall",
 			type: "Large Classroom",
 			capacity: 80,
 			address: {
@@ -2050,7 +2050,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"CDL-110": {
-			building: "Cook/Douglass Lecture Hall",
+			building: "Cook / Douglass Lecture Hall",
 			type: "Lecture Hall",
 			capacity: 120,
 			address: {
@@ -2062,7 +2062,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"DAV-122": {
-			building: "Cook/Douglass Lecture Hall",
+			building: "Davison Hall",
 			type: "Small Classroom",
 			capacity: 44,
 			address: {
@@ -2134,7 +2134,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"FSW-101": {
-			building: "Food Science and Nutrition Sciences West",
+			building: "Food Science and Nutritional Sciences West",
 			type: "Small Classroom",
 			capacity: 48,
 			address: {
@@ -2146,7 +2146,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"FSW-105": {
-			building: "Food Science and Nutrition Sciences West",
+			building: "Food Science and Nutritional Sciences West",
 			type: "Lecture Hall",
 			capacity: 194,
 			address: {
@@ -2158,7 +2158,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"FSW-109": {
-			building: "Food Science and Nutrition Sciences West",
+			building: "Food Science and Nutritional Sciences West",
 			type: "Small Classroom",
 			capacity: 48,
 			address: {
@@ -2869,7 +2869,7 @@ export const roomsByCampus = {
 	"Livingston": {
 		"BE-003": {
 			building: "Beck Hall",
-			type: "General Purpose Classroom",
+			type: "Small Classroom",
 			capacity: 40,
 			address: {
 				street: "99 Avenue E",
@@ -2881,7 +2881,7 @@ export const roomsByCampus = {
 		},
 		"BE-011": {
 			building: "Beck Hall",
-			type: "General Purpose Classroom",
+			type: "Small Classroom",
 			capacity: 40,
 			address: {
 				street: "99 Avenue E",
@@ -3133,7 +3133,7 @@ export const roomsByCampus = {
 		},
 		"LSH-A232": {
 			building: "Lucy Stone Hall",
-			type: "Seminar Room",
+			type: "Lecture Hall",
 			capacity: 20,
 			address: {
 				street: "54 Joyce Kilmer Avenue",
@@ -3141,11 +3141,11 @@ export const roomsByCampus = {
 				state: "NJ",
 				zip: "08854"
 			},
-			seating: "Moveable Chair"
+			seating: "Fixed Chair"
 		},
 		"LSH-B105": {
 			building: "Lucy Stone Hall",
-			type: "General Purpose Classroom",
+			type: "Small Classroom",
 			capacity: 45,
 			address: {
 				street: "54 Joyce Kilmer Avenue",
@@ -3157,7 +3157,7 @@ export const roomsByCampus = {
 		},
 		"LSH-B109": {
 			building: "Lucy Stone Hall",
-			type: "General Purpose Classroom",
+			type: "Small Classroom",
 			capacity: 24,
 			address: {
 				street: "54 Joyce Kilmer Avenue",
@@ -3300,7 +3300,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-103A": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 42,
 			address: {
@@ -3312,7 +3312,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-103B": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 42,
 			address: {
@@ -3324,7 +3324,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-103C": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 44,
 			address: {
@@ -3336,7 +3336,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-103D": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 28,
 			address: {
@@ -3348,7 +3348,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-105": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 45,
 			address: {
@@ -3360,7 +3360,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-111L": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Seminar Room",
 			capacity: 12,
 			address: {
@@ -3372,8 +3372,8 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-111M": {
-			building: "Tillet Hall",
-			type: "Seminar Room",
+			building: "Tillett Hall",
+			type: "Small Classroom",
 			capacity: 18,
 			address: {
 				street: "53 Avenue E",
@@ -3384,7 +3384,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-111N": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 18,
 			address: {
@@ -3396,7 +3396,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-111P": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 18,
 			address: {
@@ -3408,7 +3408,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-116": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Large Classroom",
 			capacity: 98,
 			address: {
@@ -3420,7 +3420,7 @@ export const roomsByCampus = {
 			seating: "Swivel Chair"
 		},
 		"TIL-123": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 25,
 			address: {
@@ -3432,7 +3432,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-125": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 25,
 			address: {
@@ -3444,7 +3444,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-127": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 25,
 			address: {
@@ -3456,7 +3456,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-204": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Large Classroom",
 			capacity: 54,
 			address: {
@@ -3468,7 +3468,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-207": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 45,
 			address: {
@@ -3480,7 +3480,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-209": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 40,
 			address: {
@@ -3492,7 +3492,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-224": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 29,
 			address: {
@@ -3504,7 +3504,7 @@ export const roomsByCampus = {
 			seating: "Swivel Chair"
 		},
 		"TIL-226": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Lecture Hall",
 			capacity: 123,
 			address: {
@@ -3516,8 +3516,8 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"TIL-230": {
-			building: "Tillet Hall",
-			type: "Lecture Hall",
+			building: "Tillett Hall",
+			type: "Small Classroom",
 			capacity: 48,
 			address: {
 				street: "53 Avenue E",
@@ -3528,7 +3528,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-232": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Lecture Hall",
 			capacity: 208,
 			address: {
@@ -3540,7 +3540,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"TIL-242": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Lecture Hall",
 			capacity: 118,
 			address: {
@@ -3552,7 +3552,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"TIL-246": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Large Classroom",
 			capacity: 82,
 			address: {
@@ -3564,7 +3564,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"TIL-251": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 44,
 			address: {
@@ -3576,7 +3576,7 @@ export const roomsByCampus = {
 			seating: "Swivel Chair"
 		},
 		"TIL-252": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Small Classroom",
 			capacity: 48,
 			address: {
@@ -3588,7 +3588,7 @@ export const roomsByCampus = {
 			seating: "Moveable Chair"
 		},
 		"TIL-253": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Large Classroom",
 			capacity: 58,
 			address: {
@@ -3600,7 +3600,7 @@ export const roomsByCampus = {
 			seating: "Swivel Chair"
 		},
 		"TIL-254": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Lecture Hall",
 			capacity: 204,
 			address: {
@@ -3612,7 +3612,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"TIL-257": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Lecture Hall",
 			capacity: 128,
 			address: {
@@ -3624,7 +3624,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"TIL-258": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Lecture Hall",
 			capacity: 102,
 			address: {
@@ -3636,7 +3636,7 @@ export const roomsByCampus = {
 			seating: "Fixed Chair"
 		},
 		"TIL-264": {
-			building: "Tillet Hall",
+			building: "Tillett Hall",
 			type: "Lecture Hall",
 			capacity: 116,
 			address: {
