@@ -1,6 +1,9 @@
 import type TransitLocationState from "@/types/transit/pages/transitLocationState.ts";
 import type TransitSnapshot from "@/types/transit/models/transitSnapshot.ts";
 
+/**
+ * Raw transit page inputs used to derive render-ready board state.
+ */
 type TransitBoardViewStateParams = Readonly<{
 	snapshot: TransitSnapshot | null;
 	selectedRouteId: string | null;

@@ -33,6 +33,9 @@ const largestRoom = roomListings.reduce<RoomListing | null>(
 );
 const stringCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
+/**
+ * Checks whether a room matches the active free-text directory filter.
+ */
 function matchesRoomQuery(room: RoomListing, normalizedQuery: string) {
 	return (
 		normalizedQuery === "" ||
@@ -52,10 +55,16 @@ function matchesRoomQuery(room: RoomListing, normalizedQuery: string) {
 	);
 }
 
+/**
+ * Formats a campus filter chip with the number of rooms available on that campus.
+ */
 function formatCampusButtonLabel(campus: RoomCampus) {
 	return `${campus} · ${Object.keys(roomsByCampus[campus]).length}`;
 }
 
+/**
+ * Sorts room listings while preserving a stable room-code tie breaker.
+ */
 function sortRooms(rooms: readonly RoomListing[], sortKey: RoomSortKey, sortDirection: RoomSortDirection) {
 	const directionMultiplier = sortDirection === "asc" ? 1 : -1;
 
@@ -81,6 +90,9 @@ function sortRooms(rooms: readonly RoomListing[], sortKey: RoomSortKey, sortDire
 		return (comparison || stringCollator.compare(leftRoom.roomCode, rightRoom.roomCode)) * directionMultiplier;
 	});
 }
+/**
+ * Maps and rooms preview page with search, campus filtering, sorting, and map handoff links.
+ */
 export default function RoomsPage() {
 	const [selectedCampus, setSelectedCampus] = useState<RoomCampus | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");

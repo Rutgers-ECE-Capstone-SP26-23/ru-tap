@@ -1,6 +1,9 @@
 import type TransitRouteButtonProps from "@/types/transit/props/transitRouteButtonProps.ts";
 import { getRouteBadgeStyle, getRouteButtonStyle } from "@/utils/transit/display.ts";
 
+/**
+ * Route selector button styled with the route's feed color and live bus count.
+ */
 export default function TransitRouteButton({ route, isSelected, onSelect }: TransitRouteButtonProps) {
 	const liveLabel = route.buses.length > 0 ? `${route.buses.length} live` : "Quiet now";
 

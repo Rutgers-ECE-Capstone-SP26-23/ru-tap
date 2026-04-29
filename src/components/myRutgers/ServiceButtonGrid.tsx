@@ -2,6 +2,9 @@ import ServiceButtonCard from "@/components/myRutgers/ServiceButtonCard.tsx";
 import "@/styles/components/ServiceButtonGrid.css";
 import type ServiceButtonGridProps from "@/types/components/props/serviceButtonGridProps.ts";
 
+/**
+ * Renders the configured myRutgers services as a horizontal or vertical selector.
+ */
 export default function ServiceButtonGrid({
 	layout,
 	services,

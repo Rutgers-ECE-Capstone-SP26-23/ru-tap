@@ -3,6 +3,9 @@ import type RoomCatalog from "@/types/rooms/models/roomCatalog.ts";
 import type RoomCode from "@/types/rooms/models/roomCode.ts";
 import type RoomRecord from "@/types/rooms/models/roomRecord.ts";
 
+/**
+ * Static classroom directory grouped by Rutgers New Brunswick campus.
+ */
 export const roomsByCampus = {
 	"Busch": {
 		"ARC-103": {

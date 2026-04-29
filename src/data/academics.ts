@@ -19,6 +19,9 @@ const defaultAcademicCatalogKey = {
 } as const satisfies AcademicCatalogKey;
 const inFlightAcademicCatalogLoads = new Map<string, Promise<AcademicCatalogDataset>>();
 
+/**
+ * Normalizes caller-supplied catalog identifiers into the on-disk dataset path shape.
+ */
 function normalizeAcademicCatalogKey(catalogKey: AcademicCatalogKey): AcademicCatalogKey {
 	return {
 		campus: catalogKey.campus.trim().toUpperCase(),
@@ -27,14 +30,23 @@ function normalizeAcademicCatalogKey(catalogKey: AcademicCatalogKey): AcademicCa
 	};
 }
 
+/**
+ * Builds the stable IndexedDB key used for one condensed catalog snapshot.
+ */
 function getAcademicCatalogCacheRecordId(catalogKey: AcademicCatalogKey) {
 	return `${catalogKey.year}:${catalogKey.term}:${catalogKey.campus}`;
 }
 
+/**
+ * Checks whether this browser context can use the local academic catalog cache.
+ */
 function supportsAcademicCatalogCache() {
 	return typeof indexedDB !== "undefined";
 }
 
+/**
+ * Extracts the lightweight freshness manifest stored beside a cached dataset.
+ */
 function getAcademicCatalogManifest(dataset: AcademicCatalogDataset): AcademicCatalogManifest {
 	return {
 		generatedAt: dataset.generatedAt,
@@ -43,14 +55,23 @@ function getAcademicCatalogManifest(dataset: AcademicCatalogDataset): AcademicCa
 	};
 }
 
+/**
+ * Serializes manifests for equality checks across cached and network snapshots.
+ */
 function getAcademicCatalogManifestSignature(manifest: AcademicCatalogManifest) {
 	return JSON.stringify(manifest);
 }
 
+/**
+ * Compares two catalog manifests without depending on object identity.
+ */
 function academicCatalogManifestsMatch(leftManifest: AcademicCatalogManifest, rightManifest: AcademicCatalogManifest) {
 	return getAcademicCatalogManifestSignature(leftManifest) === getAcademicCatalogManifestSignature(rightManifest);
 }
 
+/**
+ * Opens the IndexedDB store that caches condensed academic catalog datasets.
+ */
 function openAcademicCatalogCacheDatabase(): Promise<IDBDatabase> {
 	return new Promise((resolve, reject) => {
 		const request = indexedDB.open(academicCatalogCacheDatabaseName, academicCatalogCacheDatabaseVersion);
@@ -71,6 +92,9 @@ function openAcademicCatalogCacheDatabase(): Promise<IDBDatabase> {
 	});
 }
 
+/**
+ * Reads one cached catalog record, returning `null` when no record exists.
+ */
 async function readAcademicCatalogCacheRecord(recordId: string): Promise<AcademicCatalogCacheRecord | null> {
 	const database = await openAcademicCatalogCacheDatabase();
 
@@ -104,6 +128,9 @@ async function readAcademicCatalogCacheRecord(recordId: string): Promise<Academi
 	});
 }
 
+/**
+ * Writes a complete catalog record to the browser cache.
+ */
 async function writeAcademicCatalogCacheRecord(record: AcademicCatalogCacheRecord): Promise<void> {
 	const database = await openAcademicCatalogCacheDatabase();
 
@@ -130,6 +157,9 @@ async function writeAcademicCatalogCacheRecord(record: AcademicCatalogCacheRecor
 	});
 }
 
+/**
+ * Fetches the manifest used to decide whether a cached catalog is still current.
+ */
 async function fetchAcademicCatalogManifest(
 	catalogKey: AcademicCatalogKey = defaultAcademicCatalogKey
 ): Promise<AcademicCatalogManifest> {
@@ -144,6 +174,9 @@ async function fetchAcademicCatalogManifest(
 	return (await response.json()) as AcademicCatalogManifest;
 }
 
+/**
+ * Fetches the full condensed catalog dataset from the public data surface.
+ */
 async function fetchAcademicCatalogDataset(
 	catalogKey: AcademicCatalogKey = defaultAcademicCatalogKey
 ): Promise<AcademicCatalogDataset> {
@@ -156,6 +189,9 @@ async function fetchAcademicCatalogDataset(
 	return (await response.json()) as AcademicCatalogDataset;
 }
 
+/**
+ * Best-effort cache write for a newly fetched catalog dataset.
+ */
 async function persistAcademicCatalogDataset(
 	catalogKey: AcademicCatalogKey,
 	dataset: AcademicCatalogDataset
@@ -171,6 +207,9 @@ async function persistAcademicCatalogDataset(
 	});
 }
 
+/**
+ * Loads the catalog with stale-cache fallback when manifest or dataset fetches fail.
+ */
 async function loadAcademicCatalogInternal(
 	catalogKey: AcademicCatalogKey = defaultAcademicCatalogKey
 ): Promise<AcademicCatalogDataset> {
@@ -234,6 +273,9 @@ async function loadAcademicCatalogInternal(
 	}
 }
 
+/**
+ * Returns the public URL for a condensed academic catalog JSON payload.
+ */
 export function getAcademicCatalogDataUrl(catalogKey: AcademicCatalogKey = defaultAcademicCatalogKey) {
 	const normalizedCatalogKey = normalizeAcademicCatalogKey(catalogKey);
 
@@ -242,6 +284,9 @@ export function getAcademicCatalogDataUrl(catalogKey: AcademicCatalogKey = defau
 	);
 }
 
+/**
+ * Returns the public URL for the metadata file paired with a catalog payload.
+ */
 export function getAcademicCatalogManifestUrl(catalogKey: AcademicCatalogKey = defaultAcademicCatalogKey) {
 	const normalizedCatalogKey = normalizeAcademicCatalogKey(catalogKey);
 
@@ -250,12 +295,18 @@ export function getAcademicCatalogManifestUrl(catalogKey: AcademicCatalogKey = d
 	);
 }
 
+/**
+ * Warms the academic catalog cache without exposing the loaded dataset to callers.
+ */
 export async function prefetchAcademicCatalog(
 	catalogKey: AcademicCatalogKey = defaultAcademicCatalogKey
 ): Promise<void> {
 	await loadAcademicCatalog(catalogKey);
 }
 
+/**
+ * Loads one academic catalog dataset and deduplicates concurrent requests for it.
+ */
 export async function loadAcademicCatalog(
 	catalogKey: AcademicCatalogKey = defaultAcademicCatalogKey
 ): Promise<AcademicCatalogDataset> {

@@ -1,6 +1,9 @@
 import "@/styles/components/ServiceButtonCard.css";
 import type ServiceButtonCardProps from "@/types/components/props/serviceButtonCardProps.ts";
 
+/**
+ * Selectable control for one myRutgers workspace service.
+ */
 export default function ServiceButtonCard({ service, isSelected, onSelect }: ServiceButtonCardProps) {
 	const buttonClassName = isSelected ? "service-button selected" : "service-button";
 

@@ -1,5 +1,8 @@
 import type TransitRouteGroupProps from "@/types/transit/props/transitRouteGroupProps.ts";
 
+/**
+ * Expandable route group that supports a collapsed peek on mobile layouts.
+ */
 export default function TransitRouteGroup({
 	label,
 	metaLabel,

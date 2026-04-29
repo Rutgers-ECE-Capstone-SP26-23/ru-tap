@@ -52,22 +52,37 @@ const courseSearchTimePartsFormatter = new Intl.DateTimeFormat("en-US", {
 	timeZone: courseSearchTimeZone
 });
 
+/**
+ * Builds the canonical course code displayed and indexed by search.
+ */
 function getAcademicCourseCode(course: Pick<AcademicCourse, "dept" | "number" | "school">) {
 	return `${course.school}:${course.dept}:${course.number}`;
 }
 
+/**
+ * Removes empty and duplicate values while preserving first-seen order.
+ */
 function getUniqueStrings(values: readonly string[]) {
 	return [...new Set(values.filter(value => value.trim() !== ""))];
 }
 
+/**
+ * Collects every unique professor listed on a course's sections.
+ */
 function getCourseProfessors(course: AcademicCourse) {
 	return getUniqueStrings(course.sections.flatMap(section => section.professors));
 }
 
+/**
+ * Collects every unique campus represented by a course's meetings.
+ */
 function getCourseCampuses(course: AcademicCourse) {
 	return getUniqueStrings(course.sections.flatMap(section => section.meetings.map(meeting => meeting.campus)));
 }
 
+/**
+ * Sorts campus labels in Rutgers-facing order, with unknown labels last.
+ */
 function sortCampusNames(firstCampus: string, secondCampus: string) {
 	const firstIndex = campusSortOrder.indexOf(firstCampus as (typeof campusSortOrder)[number]);
 	const secondIndex = campusSortOrder.indexOf(secondCampus as (typeof campusSortOrder)[number]);
@@ -78,16 +93,25 @@ function sortCampusNames(firstCampus: string, secondCampus: string) {
 	return firstOrder === secondOrder ? stringCollator.compare(firstCampus, secondCampus) : firstOrder - secondOrder;
 }
 
+/**
+ * Normalizes a campus label for display.
+ */
 function formatCampusName(campus: string) {
 	return campus;
 }
 
+/**
+ * Builds the compact campus summary shown in cards and search results.
+ */
 function formatCampusSummary(campuses: readonly string[]) {
 	const visibleCampuses = campuses.filter(campus => !hiddenCampusOptions.has(campus)).sort(sortCampusNames);
 
 	return visibleCampuses.length > 0 ? visibleCampuses.map(formatCampusName).join(" · ") : "Campus TBA";
 }
 
+/**
+ * Converts Rutgers SOC military-time strings into Eastern local display time.
+ */
 function formatMilitaryTime(time: string) {
 	if (!/^\d{4}$/.test(time)) {
 		return null;
@@ -105,6 +129,9 @@ function formatMilitaryTime(time: string) {
 	return courseSearchTimeFormatter.format(date);
 }
 
+/**
+ * Expands SOC one-letter meeting-day codes into short weekday labels.
+ */
 function formatMeetingDay(day: string) {
 	switch (day) {
 		case "M":
@@ -128,6 +155,9 @@ function formatMeetingDay(day: string) {
 	}
 }
 
+/**
+ * Formats one meeting's day and time range, preserving TBA states.
+ */
 function formatMeetingWindow(meeting: AcademicCourseMeeting) {
 	const start = formatMilitaryTime(meeting.start);
 	const end = formatMilitaryTime(meeting.end);
@@ -147,6 +177,9 @@ function formatMeetingWindow(meeting: AcademicCourseMeeting) {
 	return "Time TBA";
 }
 
+/**
+ * Formats the campus, building, and room information for one meeting.
+ */
 function formatMeetingLocation(meeting: AcademicCourseMeeting) {
 	const roomLabel = [meeting.building, meeting.room].filter(part => part.trim() !== "").join(" ");
 
@@ -169,6 +202,9 @@ function formatMeetingLocation(meeting: AcademicCourseMeeting) {
 	return "Location TBA";
 }
 
+/**
+ * Builds the short course summary line used in result metadata.
+ */
 function getCourseSummaryLine(sectionCount: number, professorCount: number, campuses: readonly string[]) {
 	const visibleCampuses = campuses.filter(campus => !hiddenCampusOptions.has(campus)).sort(sortCampusNames);
 
@@ -181,6 +217,9 @@ function getCourseSummaryLine(sectionCount: number, professorCount: number, camp
 		.join(" · ");
 }
 
+/**
+ * Creates a denormalized lowercase search blob from course, section, meeting, and cross-listing data.
+ */
 function createCourseSearchText(course: AcademicCourse, code: string, campuses: readonly string[]) {
 	return [
 		code,
@@ -216,6 +255,9 @@ function createCourseSearchText(course: AcademicCourse, code: string, campuses: 
 		.toLowerCase();
 }
 
+/**
+ * Converts one raw academic course into the enriched record used by search and rendering.
+ */
 function getIndexedCourse(course: AcademicCourse): IndexedCourse {
 	const code = getAcademicCourseCode(course);
 	const campuses = getCourseCampuses(course);
@@ -232,12 +274,18 @@ function getIndexedCourse(course: AcademicCourse): IndexedCourse {
 	};
 }
 
+/**
+ * Builds the in-memory course index after catalog load.
+ */
 function createCourseCatalogIndex(courses: readonly AcademicCourse[]): CourseCatalogIndex {
 	return {
 		allCourses: courses.map(getIndexedCourse).sort(sortCourses)
 	};
 }
 
+/**
+ * Checks whether every query token appears in a course's denormalized search text.
+ */
 function matchesCourseQuery(indexedCourse: IndexedCourse, normalizedQueryTokens: readonly string[]) {
 	if (normalizedQueryTokens.length === 0) {
 		return false;
@@ -246,6 +294,9 @@ function matchesCourseQuery(indexedCourse: IndexedCourse, normalizedQueryTokens:
 	return normalizedQueryTokens.every(queryToken => indexedCourse.searchText.includes(queryToken));
 }
 
+/**
+ * Sorts indexed courses by code, then by name for duplicate-code stability.
+ */
 function sortCourses(leftCourse: IndexedCourse, rightCourse: IndexedCourse) {
 	const codeComparison = stringCollator.compare(leftCourse.code, rightCourse.code);
 
@@ -254,22 +305,34 @@ function sortCourses(leftCourse: IndexedCourse, rightCourse: IndexedCourse) {
 		: codeComparison;
 }
 
+/**
+ * Chooses the result-count noun shown beside the search controls.
+ */
 function getCourseResultCountLabel(hasQuery: boolean, matchedCourseCount: number) {
 	if (!hasQuery) return "courses indexed";
 	return matchedCourseCount === 1 ? "match" : "matches";
 }
 
+/**
+ * Builds the helper line that explains whether the active result is one of many.
+ */
 function getCourseResultMetaLine(matchedCourseCount: number) {
 	if (matchedCourseCount === 1) return "1 course matched your search.";
 	return `Showing the first of ${matchedCourseCount} matching courses. Refine the query to narrow the result.`;
 }
 
+/**
+ * Formats the section instructor count chip.
+ */
 function getSectionInstructorLabel(instructorCount: number) {
 	if (instructorCount === 0) return "Instructor TBA";
 	if (instructorCount === 1) return "1 instructor";
 	return `${instructorCount} instructors`;
 }
 
+/**
+ * Renders optional notes attached to a course section.
+ */
 function renderCourseSectionNotes(section: AcademicCourse["sections"][number]) {
 	return (
 		<>
@@ -308,6 +371,9 @@ function renderCourseSectionNotes(section: AcademicCourse["sections"][number]) {
 	);
 }
 
+/**
+ * Renders one course section with its meetings and registration metadata.
+ */
 function renderCourseSection(activeCourse: IndexedCourse, section: AcademicCourse["sections"][number]) {
 	return (
 		<article key={`${activeCourse.code}-${section.index}`} className="course-search-section-card">
@@ -346,6 +412,9 @@ function renderCourseSection(activeCourse: IndexedCourse, section: AcademicCours
 	);
 }
 
+/**
+ * Renders the search-result body for empty, no-match, and active-course states.
+ */
 function renderCourseSearchResults({
 	activeCourse,
 	hasQuery,
@@ -406,6 +475,9 @@ function renderCourseSearchResults({
 	);
 }
 
+/**
+ * Search-driven Rutgers catalog preview module for the myRutgers workspace.
+ */
 export default function CourseSearchModule() {
 	const [catalogIndex, setCatalogIndex] = useState<CourseCatalogIndex>({
 		allCourses: []

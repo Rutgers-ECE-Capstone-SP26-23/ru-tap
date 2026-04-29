@@ -1,18 +1,27 @@
 import type RoomListing from "@/types/rooms/models/roomListing.ts";
 import type RoomsDetailsPanelProps from "@/types/rooms/props/roomsDetailsPanelProps.ts";
 
+/**
+ * Builds a Google Maps search URL for the selected classroom.
+ */
 function buildRoomMapHref(room: RoomListing) {
 	return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
 		`${room.building} ${room.roomCode}, ${room.address.street}, ${room.address.city}, ${room.address.state} ${room.address.zip}`
 	)}`;
 }
 
+/**
+ * Builds an Apple Maps search URL for the selected classroom.
+ */
 function buildAppleMapsHref(room: RoomListing) {
 	return `https://maps.apple.com/?q=${encodeURIComponent(
 		`${room.building} ${room.roomCode}, ${room.address.street}, ${room.address.city}, ${room.address.state} ${room.address.zip}`
 	)}`;
 }
 
+/**
+ * Displays the currently selected classroom details and map-launch controls.
+ */
 export default function RoomsDetailsPanel({
 	detailsRef,
 	selectedRoom,

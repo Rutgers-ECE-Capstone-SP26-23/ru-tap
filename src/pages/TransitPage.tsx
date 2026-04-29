@@ -16,6 +16,9 @@ import "@/styles/pages/transitPage.css";
 
 const DESKTOP_LAYOUT_QUERY = "(min-width: 1040px)";
 
+/**
+ * Rutgers transit preview page with live route selection, mobile location hints, and route detail panels.
+ */
 export default function TransitPage() {
 	const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 	const isWideDesktop = useMediaQuery(DESKTOP_LAYOUT_QUERY);

@@ -2,6 +2,9 @@ import type TransitBus from "@/types/transit/models/transitBus.ts";
 import type TransitCampus from "@/types/transit/models/transitCampus.ts";
 import type TransitStop from "@/types/transit/models/transitStop.ts";
 
+/**
+ * Normalized transit route with feed styling, campus coverage, stops, and active vehicles.
+ */
 type TransitRoute = Readonly<{
 	id: string;
 	name: string;

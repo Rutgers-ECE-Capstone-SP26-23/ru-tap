@@ -1,6 +1,9 @@
 import type TransitAlert from "@/types/transit/models/transitAlert.ts";
 import type TransitRoute from "@/types/transit/models/transitRoute.ts";
 
+/**
+ * Fully normalized Rutgers transit board state for one fetch cycle.
+ */
 type TransitSnapshot = Readonly<{
 	updatedAt: string;
 	routes: readonly TransitRoute[];

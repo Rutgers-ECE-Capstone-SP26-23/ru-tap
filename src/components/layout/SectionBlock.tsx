@@ -2,6 +2,9 @@ import type { ReactNode } from "react";
 import "@/styles/components/SectionBlock.css";
 import type SectionBlockProps from "@/types/components/props/sectionBlockProps.ts";
 
+/**
+ * Shared full-width section shell with constrained content and optional heading copy.
+ */
 export default function SectionBlock({
 	as = "section",
 	id,

@@ -1,6 +1,9 @@
 import { academicCalendarSourceUrl } from "@/data/academicCalendar.ts";
 import type MyRutgersService from "@/types/myRutgers/models/myRutgersService.ts";
 
+/**
+ * Configured services surfaced in the myRutgers workspace.
+ */
 export const myRutgersServices: readonly MyRutgersService[] = [
 	{
 		id: "course-search",

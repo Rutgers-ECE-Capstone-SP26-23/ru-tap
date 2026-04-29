@@ -1,5 +1,8 @@
 import type TransitRoute from "@/types/transit/models/transitRoute.ts";
 
+/**
+ * Derived transit page state consumed directly by the route selector and detail panel.
+ */
 type TransitBoardViewState = Readonly<{
 	routes: readonly TransitRoute[];
 	activeRoutes: readonly TransitRoute[];

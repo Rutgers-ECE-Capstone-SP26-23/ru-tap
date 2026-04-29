@@ -7,10 +7,16 @@ import {
 } from "@/data/transit.ts";
 import type TransitSnapshot from "@/types/transit/models/transitSnapshot.ts";
 
+/**
+ * Converts arbitrary thrown values into copy safe for the transit status surface.
+ */
 function getTransitErrorMessage(caughtError: unknown) {
 	return caughtError instanceof Error ? caughtError.message : "Couldn't load Rutgers transit data.";
 }
 
+/**
+ * Merges a full-board refresh while preserving the more frequently refreshed selected route.
+ */
 function getBoardRefreshSnapshot(
 	currentSnapshot: TransitSnapshot | null,
 	nextSnapshot: TransitSnapshot,
@@ -29,6 +35,9 @@ function getBoardRefreshSnapshot(
 	});
 }
 
+/**
+ * Applies a selected-route refresh without replacing unrelated route prediction data.
+ */
 function getSelectedRouteRefreshSnapshot(
 	currentSnapshot: TransitSnapshot | null,
 	nextSnapshot: TransitSnapshot,
@@ -39,6 +48,9 @@ function getSelectedRouteRefreshSnapshot(
 		: nextSnapshot;
 }
 
+/**
+ * Loads the Rutgers transit snapshot and coordinates board-wide, selected-route, and manual refreshes.
+ */
 export default function useTransitSnapshot(selectedRouteId: string | null) {
 	const [snapshot, setSnapshot] = useState<TransitSnapshot | null>(null);
 	const [isLoading, setIsLoading] = useState(true);

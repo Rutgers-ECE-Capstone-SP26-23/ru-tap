@@ -1,5 +1,8 @@
 import type RoomsMetricCardProps from "@/types/rooms/props/roomsMetricCardProps.ts";
 
+/**
+ * Compact metric tile for the rooms page overview.
+ */
 export default function RoomsMetricCard({ label, value }: RoomsMetricCardProps) {
 	return (
 		<article className="rooms-metric-card">

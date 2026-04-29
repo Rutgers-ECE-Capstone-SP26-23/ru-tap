@@ -8,10 +8,16 @@ const PANEL_CLOSE_DURATION_MS = 360;
 const ACTIVE_ROUTE_AUTO_COLLAPSE_DURATION_MS = 360;
 const MOBILE_ROUTE_DETAILS_SCROLL_DELAY_MS = 180;
 
+/**
+ * Clears a selected route once it is no longer present in the latest route list.
+ */
 function resolveSelectedRouteId(currentRouteId: string | null, routes: readonly TransitRoute[]) {
 	return currentRouteId && routes.some(route => route.id === currentRouteId) ? currentRouteId : null;
 }
 
+/**
+ * Owns transit route selection, detail-panel close animations, active-route expansion, and mobile scrolling.
+ */
 export default function useTransitRouteSelection({
 	selectedRouteId,
 	setSelectedRouteId,

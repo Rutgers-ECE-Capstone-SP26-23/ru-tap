@@ -17,6 +17,9 @@ type ActiveRoutePeekParams = Readonly<{
 	showAllActiveRoutes: boolean;
 }>;
 
+/**
+ * Calculates a real-world distance between two latitude/longitude points.
+ */
 function getDistanceBetweenPoints(
 	startLatitude: number,
 	startLongitude: number,
@@ -35,6 +38,9 @@ function getDistanceBetweenPoints(
 	return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(haversineA), Math.sqrt(1 - haversineA));
 }
 
+/**
+ * Finds the closest unique stop across all known route stop lists.
+ */
 function getNearestTransitStop(
 	routes: readonly TransitRoute[],
 	latitude: number,
@@ -60,6 +66,9 @@ function getNearestTransitStop(
 	return nearestStop;
 }
 
+/**
+ * Moves contextual routes to the front while preserving each group's order.
+ */
 function getPrioritizedRoutes(routes: readonly TransitRoute[], prioritizedRouteIds: ReadonlySet<string>) {
 	const prioritizedRoutes: TransitRoute[] = [];
 	const remainingRoutes: TransitRoute[] = [];
@@ -76,10 +85,16 @@ function getPrioritizedRoutes(routes: readonly TransitRoute[], prioritizedRouteI
 	return [...prioritizedRoutes, ...remainingRoutes];
 }
 
+/**
+ * Formats route counts for compact active/inactive group labels.
+ */
 function getRouteCountLabel(routeCount: number) {
 	return `${routeCount} route${routeCount === 1 ? "" : "s"}`;
 }
 
+/**
+ * Builds the active-route group meta label for collapsed and expanded views.
+ */
 function getActiveRouteMetaLabel(
 	totalRouteCount: number,
 	visibleRouteCount: number,
@@ -90,6 +105,9 @@ function getActiveRouteMetaLabel(
 		: `${visibleRouteCount} shown · ${getRouteCountLabel(totalRouteCount)}`;
 }
 
+/**
+ * Chooses the outer transit layout class from viewport and selection state.
+ */
 function getLayoutClassName(isWideDesktop: boolean, hasSelectedRoute: boolean) {
 	if (!isWideDesktop) {
 		return "transit-layout stacked";
@@ -98,6 +116,9 @@ function getLayoutClassName(isWideDesktop: boolean, hasSelectedRoute: boolean) {
 	return hasSelectedRoute ? "transit-layout wide has-selection" : "transit-layout wide no-selection";
 }
 
+/**
+ * Chooses the route-detail panel animation class for desktop and mobile layouts.
+ */
 function getBoardShellClassName(isWideDesktop: boolean, hasSelectedRoute: boolean, isClosingRoutePanel: boolean) {
 	if (isWideDesktop) {
 		if (hasSelectedRoute) {
@@ -114,6 +135,9 @@ function getBoardShellClassName(isWideDesktop: boolean, hasSelectedRoute: boolea
 	return isClosingRoutePanel ? "transit-board-shell mobile closing" : "transit-board-shell mobile";
 }
 
+/**
+ * Finds active route IDs that serve the provided stop.
+ */
 function getRouteIdsForStop(routes: readonly TransitRoute[], stop: TransitStop | null) {
 	const routeIds = new Set<string>();
 	if (!stop) return routeIds;
@@ -123,6 +147,9 @@ function getRouteIdsForStop(routes: readonly TransitRoute[], stop: TransitStop |
 	return routeIds;
 }
 
+/**
+ * Finds active route IDs that serve the inferred user campus.
+ */
 function getRouteIdsForCampus(routes: readonly TransitRoute[], campus: TransitCampus | null) {
 	const routeIds = new Set<string>();
 	if (!campus) return routeIds;
@@ -132,6 +159,9 @@ function getRouteIdsForCampus(routes: readonly TransitRoute[], campus: TransitCa
 	return routeIds;
 }
 
+/**
+ * Builds the collapsed active-route set shown as the mobile contextual peek.
+ */
 function getCollapsedActiveRouteIds(
 	displayedRoute: TransitRoute | null,
 	activeRouteIds: ReadonlySet<string>,
@@ -150,6 +180,9 @@ function getCollapsedActiveRouteIds(
 	return collapsedActiveRouteIds;
 }
 
+/**
+ * Chooses fine-location stop routes before broader campus routes when available.
+ */
 function getContextualRouteIds(
 	locationState: TransitBoardViewStateParams["locationState"],
 	nearestStopRouteIds: ReadonlySet<string>,
@@ -158,6 +191,9 @@ function getContextualRouteIds(
 	return locationState?.precision === "fine" && nearestStopRouteIds.size > 0 ? nearestStopRouteIds : campusRouteIds;
 }
 
+/**
+ * Returns the nearest stop only when location precision is good enough for stop-level routing.
+ */
 function getNearestStopForLocation(
 	routes: readonly TransitRoute[],
 	locationState: TransitBoardViewStateParams["locationState"]
@@ -166,6 +202,9 @@ function getNearestStopForLocation(
 	return getNearestTransitStop(routes, locationState.latitude, locationState.longitude);
 }
 
+/**
+ * Prioritizes nearest-stop routes for the initial mobile active-route view.
+ */
 function getOrderedActiveRoutes(
 	activeRoutes: readonly TransitRoute[],
 	nearestStopRouteIds: ReadonlySet<string>,
@@ -178,6 +217,9 @@ function getOrderedActiveRoutes(
 	return activeRoutes;
 }
 
+/**
+ * Applies the collapsed active-route filter unless the user has expanded the group.
+ */
 function getVisibleActiveRoutes(
 	orderedActiveRoutes: readonly TransitRoute[],
 	collapsedActiveRouteIds: ReadonlySet<string>,
@@ -187,19 +229,31 @@ function getVisibleActiveRoutes(
 	return orderedActiveRoutes.filter(route => collapsedActiveRouteIds.has(route.id));
 }
 
+/**
+ * Keeps a closing or selected route visible even when it is outside the collapsed active set.
+ */
 function getPinnedDisplayedRoute(displayedRoute: TransitRoute | null, visibleActiveRoutes: readonly TransitRoute[]) {
 	return displayedRoute && !visibleActiveRoutes.some(route => route.id === displayedRoute.id) ? displayedRoute : null;
 }
 
+/**
+ * Prepends a pinned route to a route button list when needed.
+ */
 function getRouteButtons(pinnedDisplayedRoute: TransitRoute | null, routes: readonly TransitRoute[]) {
 	if (!pinnedDisplayedRoute) return routes;
 	return [pinnedDisplayedRoute, ...routes];
 }
 
+/**
+ * Converts the active-route expanded flag into a named display mode.
+ */
 function getActiveRouteDisplayMode(showAllActiveRoutes: boolean): ActiveRouteDisplayMode {
 	return showAllActiveRoutes ? "expanded" : "collapsed";
 }
 
+/**
+ * Determines whether mobile should show contextual active route buttons.
+ */
 function getHasCollapsedActiveRoutePeek({
 	isAutoCollapsingActiveRoutes,
 	showAllActiveRoutes,
@@ -212,6 +266,9 @@ function getHasCollapsedActiveRoutePeek({
 	return !isAutoCollapsingActiveRoutes && !showAllActiveRoutes && !hideSuggestedActiveRoutes && peekRouteCount > 0;
 }
 
+/**
+ * Determines whether the active-route peek should explain that location is still resolving.
+ */
 function shouldShowLocatingActiveRoutePeekNote({
 	isMobileDevice,
 	selectedRouteId,
@@ -232,6 +289,9 @@ function shouldShowLocatingActiveRoutePeekNote({
 	);
 }
 
+/**
+ * Determines whether the active-route peek should explain that location is unavailable.
+ */
 function shouldShowLocationUnavailableActiveRoutePeekNote({
 	isMobileDevice,
 	selectedRouteId,
@@ -254,6 +314,9 @@ function shouldShowLocationUnavailableActiveRoutePeekNote({
 	);
 }
 
+/**
+ * Derives all layout, route-list, and panel state needed by the transit page.
+ */
 export default function getTransitBoardViewState({
 	snapshot,
 	selectedRouteId,

@@ -6,6 +6,9 @@ const MyRutgersPage = lazy(() => import("@/pages/MyRutgersPage.tsx"));
 const RoomsPage = lazy(() => import("@/pages/RoomsPage.tsx"));
 const TransitPage = lazy(() => import("@/pages/TransitPage.tsx"));
 
+/**
+ * Resolves the current normalized pathname to the matching top-level RU Tap page.
+ */
 function App() {
 	const normalizedPath = normalizeAppPath(globalThis.location.pathname);
 	const page = (() => {

@@ -1,9 +1,18 @@
 import type AcademicCalendarEvent from "@/types/academics/models/academicCalendarEvent.ts";
 
+/**
+ * Official Rutgers source URL for the curated academic calendar rows below.
+ */
 export const academicCalendarSourceUrl = "https://scheduling.rutgers.edu/academic-calendar/";
 
+/**
+ * Academic years represented in the local calendar dataset.
+ */
 export const academicCalendarYears = ["2025-2026", "2026-2027", "2027-2028"] as const;
 
+/**
+ * Curated academic calendar events displayed in the myRutgers calendar widget.
+ */
 export const academicCalendarEvents: readonly AcademicCalendarEvent[] = [
 	{
 		event: "Fall Semester Begins",

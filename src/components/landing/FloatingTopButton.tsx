@@ -3,6 +3,9 @@ import "@/styles/components/FloatingTopButton.css";
 import type FloatingTopButtonProps from "@/types/components/props/floatingTopButtonProps.ts";
 import { withBasePath } from "@/utils/basePath.ts";
 
+/**
+ * Floating control that returns long pages to the top of the viewport.
+ */
 export default function FloatingTopButton({ onClick }: FloatingTopButtonProps) {
 	return (
 		<button

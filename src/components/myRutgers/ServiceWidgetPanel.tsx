@@ -5,6 +5,9 @@ import type ServiceWidgetPanelProps from "@/types/components/props/serviceWidget
 import type MyRutgersService from "@/types/myRutgers/models/myRutgersService.ts";
 import { useLayoutEffect, useRef } from "react";
 
+/**
+ * Chooses the widget implementation for a configured myRutgers service.
+ */
 function renderServiceWidgetBody(service: MyRutgersService) {
 	if (service.embedMode === "iframe")
 		return (
@@ -23,6 +26,9 @@ function renderServiceWidgetBody(service: MyRutgersService) {
 	return <AcademicCalendarModule />;
 }
 
+/**
+ * Renders the selected myRutgers service and keeps the desktop panel aligned to the visible viewport.
+ */
 export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps) {
 	const widgetPanelRef = useRef<HTMLElement | null>(null);
 

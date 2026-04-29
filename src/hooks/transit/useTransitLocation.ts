@@ -4,6 +4,9 @@ import type TransitLocationState from "@/types/transit/pages/transitLocationStat
 const FINE_LOCATION_ACCURACY_THRESHOLD_METERS = 150;
 const LOCATION_RESOLUTION_TIMEOUT_MS = 10_000;
 
+/**
+ * Wraps the callback-based browser geolocation API in a promise.
+ */
 function requestCurrentPosition(options: PositionOptions) {
 	return new Promise<GeolocationPosition>((resolve, reject) => {
 		if (!("geolocation" in navigator)) {
@@ -15,6 +18,9 @@ function requestCurrentPosition(options: PositionOptions) {
 	});
 }
 
+/**
+ * Requests the rider's location on mobile devices and reports whether a fine or coarse fix was resolved.
+ */
 export default function useTransitLocation(isMobileDevice: boolean) {
 	const [locationState, setLocationState] = useState<TransitLocationState | null>(null);
 	const [isResolvingLocation, setIsResolvingLocation] = useState(() => isMobileDevice);

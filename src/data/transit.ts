@@ -56,14 +56,23 @@ const transitCampusCenters: readonly Readonly<{
 	{ campus: "Livingston", latitude: 40.5233, longitude: -74.4398 }
 ] as const;
 
+/**
+ * Converts Passio hex color values into CSS-ready uppercase colors.
+ */
 function normalizeHexColor(color: string) {
 	return `#${color.padStart(6, "0")}`.toUpperCase();
 }
 
+/**
+ * Chooses the compact route label Passio exposes, falling back to the long name.
+ */
 function getTransitRouteShortName(line: PassioLine) {
 	return line.lineNameShort.trim() || line.lineNameLong;
 }
 
+/**
+ * Converts one Passio prediction into RU Tap's stable transit prediction model.
+ */
 function getTransitPrediction(prediction: PassioTrain["predictions"][number]): TransitPrediction {
 	return {
 		stationId: prediction.stationID,
@@ -74,6 +83,9 @@ function getTransitPrediction(prediction: PassioTrain["predictions"][number]): T
 	};
 }
 
+/**
+ * Computes squared coordinate distance for nearest-campus ranking.
+ */
 function getDistanceBetweenCoordinates(
 	startLatitude: number,
 	startLongitude: number,
@@ -86,6 +98,9 @@ function getDistanceBetweenCoordinates(
 	return latitudeDelta ** 2 + longitudeDelta ** 2;
 }
 
+/**
+ * Infers the nearest Rutgers campus for a coordinate pair.
+ */
 export function inferTransitCampus(latitude: number, longitude: number): TransitCampus {
 	let nearestCampus = transitCampusCenters[0].campus;
 	let nearestDistance = Number.POSITIVE_INFINITY;
@@ -107,6 +122,9 @@ export function inferTransitCampus(latitude: number, longitude: number): Transit
 	return nearestCampus;
 }
 
+/**
+ * Converts one Passio station into a campus-tagged transit stop.
+ */
 function getTransitStop(station: PassioStation): TransitStop {
 	return {
 		id: station.stationID,
@@ -117,6 +135,9 @@ function getTransitStop(station: PassioStation): TransitStop {
 	};
 }
 
+/**
+ * Sorts buses by their nearest visible ETA, pushing vehicles without ETA last.
+ */
 function sortBusesByNextEta(leftBus: TransitBus, rightBus: TransitBus) {
 	const leftEta = leftBus.nextStops[0]?.etaMs ?? Number.MAX_SAFE_INTEGER;
 	const rightEta = rightBus.nextStops[0]?.etaMs ?? Number.MAX_SAFE_INTEGER;
@@ -124,6 +145,9 @@ function sortBusesByNextEta(leftBus: TransitBus, rightBus: TransitBus) {
 	return leftEta - rightEta;
 }
 
+/**
+ * Applies RU Tap's preferred Rutgers route order, then falls back to name sorting.
+ */
 function sortRoutes(leftRoute: TransitRoute, rightRoute: TransitRoute) {
 	const leftIndex = transitRouteOrderIndex.get(leftRoute.name) ?? Number.MAX_SAFE_INTEGER;
 	const rightIndex = transitRouteOrderIndex.get(rightRoute.name) ?? Number.MAX_SAFE_INTEGER;
@@ -131,14 +155,23 @@ function sortRoutes(leftRoute: TransitRoute, rightRoute: TransitRoute) {
 	return leftIndex === rightIndex ? leftRoute.name.localeCompare(rightRoute.name) : leftIndex - rightIndex;
 }
 
+/**
+ * Converts Passio's inline `BR` markers into displayable alert line breaks.
+ */
 function sanitizeAlertMessage(message: string) {
 	return message.replaceAll(/\s*BR\s*/g, "\n").trim();
 }
 
+/**
+ * Collects the campuses touched by a route's stop list.
+ */
 function getRouteCampuses(stops: readonly TransitStop[]) {
 	return [...new Set(stops.map(stop => stop.campus))];
 }
 
+/**
+ * Builds the final sorted snapshot and summary counts from normalized pieces.
+ */
 function buildTransitSnapshotFromParts(
 	updatedAt: string,
 	routes: readonly TransitRoute[],
@@ -165,6 +198,9 @@ function buildTransitSnapshotFromParts(
 	};
 }
 
+/**
+ * Converts the raw Passio feed into the app's route, bus, alert, and status model.
+ */
 function buildTransitSnapshot(feed: PassioFeed): TransitSnapshot {
 	const excludedRouteNames = new Set<string>(excludedTransitRouteNames);
 	const allLines = Object.values(feed.lines);
@@ -257,6 +293,13 @@ function buildTransitSnapshot(feed: PassioFeed): TransitSnapshot {
 	});
 }
 
+/**
+ * Merges a partial route refresh into an existing board snapshot.
+ *
+ * The selected-route refresh path requests a newer feed more often than the whole
+ * board. This function replaces only the requested routes and preserves the rest
+ * of the current board state.
+ */
 export function mergeTransitSnapshots(
 	currentSnapshot: TransitSnapshot,
 	nextSnapshot: TransitSnapshot,
@@ -302,6 +345,9 @@ export function mergeTransitSnapshots(
 	);
 }
 
+/**
+ * Fetches the live Rutgers Passio feed and converts it into a board snapshot.
+ */
 export async function fetchTransitSnapshot(signal?: AbortSignal): Promise<TransitSnapshot> {
 	const response = await fetch(`${TRANSIT_FEED_URL}?t=${Date.now()}`, {
 		headers: {

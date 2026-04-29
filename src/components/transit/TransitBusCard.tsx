@@ -1,6 +1,9 @@
 import type TransitBusCardProps from "@/types/transit/props/transitBusCardProps.ts";
 import { formatBusNumber, formatEta, formatHeading, formatShortTime } from "@/utils/transit/display.ts";
 
+/**
+ * Displays one live or scheduled vehicle and its next reported stops.
+ */
 export default function TransitBusCard({ bus }: TransitBusCardProps) {
 	const busNumber = formatBusNumber(bus.runNumber);
 

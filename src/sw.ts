@@ -48,6 +48,9 @@ serviceWorkerScope.addEventListener("fetch", event => {
 	event.respondWith(staleWhileRevalidate(request));
 });
 
+/**
+ * Serves navigations network-first and falls back to the cached application shell while offline.
+ */
 async function handleNavigationRequest(request: Request) {
 	try {
 		const networkResponse = await fetch(request);
@@ -60,10 +63,16 @@ async function handleNavigationRequest(request: Request) {
 	}
 }
 
+/**
+ * Identifies static app assets that are safe to keep in the runtime cache.
+ */
 function isCacheableAsset(request: Request) {
 	return ["script", "style", "image", "font"].includes(request.destination) || request.url.endsWith(".webmanifest");
 }
 
+/**
+ * Returns cached static assets immediately while refreshing them in the background when possible.
+ */
 async function staleWhileRevalidate(request: Request): Promise<Response> {
 	const runtimeCache = await caches.open(RUNTIME_CACHE);
 	const cachedResponse = await runtimeCache.match(request);

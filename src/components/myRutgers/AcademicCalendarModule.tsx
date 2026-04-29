@@ -13,6 +13,9 @@ const sectionLabels = {
 	summer: "Summer"
 } as const satisfies Record<AcademicCalendarEvent["section"], string>;
 
+/**
+ * Builds a searchable text blob for one academic calendar event across all supported years.
+ */
 function getAcademicCalendarSearchText(event: AcademicCalendarEvent) {
 	return [
 		event.event,
@@ -24,6 +27,9 @@ function getAcademicCalendarSearchText(event: AcademicCalendarEvent) {
 		.toLowerCase();
 }
 
+/**
+ * Checks whether every search token is present in the event's normalized calendar text.
+ */
 function matchesSearchQuery(event: AcademicCalendarEvent, normalizedSearchTokens: readonly string[]) {
 	if (normalizedSearchTokens.length === 0) return true;
 
@@ -32,14 +38,23 @@ function matchesSearchQuery(event: AcademicCalendarEvent, normalizedSearchTokens
 	return normalizedSearchTokens.every(token => searchText.includes(token));
 }
 
+/**
+ * Resolves the active year filter into the year columns to render.
+ */
 function getVisibleYears(selectedYear: CalendarYearFilter) {
 	return selectedYear === "all" ? academicCalendarYears : [selectedYear];
 }
 
+/**
+ * Formats the label shown on an academic year filter chip.
+ */
 function formatYearFilterLabel(year: CalendarYearFilter) {
 	return year === "all" ? "All years" : year;
 }
 
+/**
+ * Searchable academic-calendar widget for the myRutgers workspace.
+ */
 export default function AcademicCalendarModule() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedYear, setSelectedYear] = useState<CalendarYearFilter>("all");

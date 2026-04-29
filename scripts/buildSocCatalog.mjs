@@ -10,6 +10,9 @@ const DATASET_VERSION = 1;
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDirectory, "..");
 
+/**
+ * Prints command-line usage for the catalog builder.
+ */
 function showHelp() {
 	console.log(`Build a condensed Rutgers SOC catalog snapshot.
 
@@ -22,6 +25,9 @@ Examples:
 `);
 }
 
+/**
+ * Reads an option value from either `--flag=value` or `--flag value` syntax.
+ */
 function readOptionValue(argument, argv, index) {
 	const equalsIndex = argument.indexOf("=");
 
@@ -44,6 +50,9 @@ function readOptionValue(argument, argv, index) {
 	};
 }
 
+/**
+ * Parses the supported catalog builder flags into a normalized options object.
+ */
 function parseArgs(argv) {
 	const options = {
 		campus: DEFAULT_CAMPUS,
@@ -111,6 +120,9 @@ function parseArgs(argv) {
 	return options;
 }
 
+/**
+ * Trims a required string input and throws when it is absent or empty.
+ */
 function normalizeRequiredString(value, label) {
 	if (typeof value !== "string") {
 		throw new TypeError(`Expected ${label} to be a string`);
@@ -125,6 +137,9 @@ function normalizeRequiredString(value, label) {
 	return normalizedValue;
 }
 
+/**
+ * Trims an optional string input and converts empty strings to `undefined`.
+ */
 function normalizeOptionalString(value) {
 	if (typeof value !== "string") {
 		return undefined;
@@ -135,6 +150,9 @@ function normalizeOptionalString(value) {
 	return normalizedValue.length > 0 ? normalizedValue : undefined;
 }
 
+/**
+ * Maps Rutgers SOC campus and mode labels into the app's display vocabulary.
+ */
 function normalizeMeetingCampusName(campusName, meetingModeDescription) {
 	const normalizedCampusName = normalizeOptionalString(campusName);
 
@@ -169,6 +187,9 @@ function normalizeMeetingCampusName(campusName, meetingModeDescription) {
 	}
 }
 
+/**
+ * Deduplicates normalized strings while preserving the original ordering.
+ */
 function dedupeStrings(values) {
 	const seenValues = new Set();
 	const dedupedValues = [];
@@ -187,6 +208,9 @@ function dedupeStrings(values) {
 	return dedupedValues;
 }
 
+/**
+ * Deduplicates structured records with a caller-provided stable key.
+ */
 function dedupeObjects(values, getKey) {
 	const seenKeys = new Set();
 	const dedupedValues = [];
@@ -205,20 +229,32 @@ function dedupeObjects(values, getKey) {
 	return dedupedValues;
 }
 
+/**
+ * Builds the Rutgers SOC API URL for the requested catalog term.
+ */
 function getSourceUrl(year, term, campus) {
 	return `https://classes.rutgers.edu/soc/api/courses.json?year=${year}&term=${term}&campus=${campus}`;
 }
 
+/**
+ * Builds the default generated catalog path under `public/data/academics`.
+ */
 function getDefaultOutputPath(year, term, campus, pretty) {
 	const outputFileName = pretty ? "courses.condensed.json" : "courses.condensed.min.json";
 
 	return path.join(repoRoot, "public", "data", "academics", year, term, campus, outputFileName);
 }
 
+/**
+ * Pairs a catalog JSON output path with its metadata manifest path.
+ */
 function getManifestOutputPath(outputPath) {
 	return outputPath.replace(/\.json$/u, ".meta.json");
 }
 
+/**
+ * Reads the source catalog from disk when provided, otherwise fetches Rutgers SOC.
+ */
 async function getSourceText(options) {
 	if (options.input !== undefined) {
 		const inputPath = path.resolve(process.cwd(), options.input);
@@ -234,6 +270,9 @@ async function getSourceText(options) {
 	return response.text();
 }
 
+/**
+ * Condenses one SOC meeting record into the app's meeting shape.
+ */
 function getMeeting(meeting) {
 	return {
 		building: normalizeOptionalString(meeting.buildingCode) ?? "",
@@ -247,6 +286,9 @@ function getMeeting(meeting) {
 	};
 }
 
+/**
+ * Condenses one SOC cross-listed section record.
+ */
 function getCrossListing(crossListing) {
 	return {
 		dept: normalizeOptionalString(crossListing.subjectCode) ?? "",
@@ -256,6 +298,9 @@ function getCrossListing(crossListing) {
 	};
 }
 
+/**
+ * Condenses one SOC section while omitting empty optional fields.
+ */
 function getSection(section) {
 	const crossListings = dedupeObjects(
 		Array.isArray(section.crossListedSections) ? section.crossListedSections.map(getCrossListing) : [],
@@ -299,6 +344,9 @@ function getSection(section) {
 	return compactSection;
 }
 
+/**
+ * Condenses one SOC course while preserving searchable schedule metadata.
+ */
 function getCourse(course, includePrereqs) {
 	const compactCourse = {
 		code: normalizeOptionalString(course.courseString) ?? "",
@@ -322,6 +370,9 @@ function getCourse(course, includePrereqs) {
 	return compactCourse;
 }
 
+/**
+ * Generates the condensed catalog JSON plus its metadata manifest.
+ */
 async function main() {
 	const parsedOptions = parseArgs(process.argv.slice(2));
 
