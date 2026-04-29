@@ -10,7 +10,8 @@ type PassioFeed = Readonly<{
 	lines: Readonly<Record<string, PassioLine>>;
 	alerts: readonly PassioAlert[];
 	lastUpdated: string;
-	shitsFucked: PassioSystemStatus;
+	// The API is opaque regarding this field's purpose, but to keep with the original spirit of the data, we have remixed the name.
+	isShitFucked: PassioSystemStatus;
 }>;
 
 export type { PassioFeed as default };

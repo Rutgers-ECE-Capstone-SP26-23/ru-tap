@@ -252,8 +252,8 @@ function buildTransitSnapshot(feed: PassioFeed): TransitSnapshot {
 		}));
 
 	return buildTransitSnapshotFromParts(feed.lastUpdated, routes, alerts, {
-		isDisrupted: feed.shitsFucked.shitIsFucked,
-		message: feed.shitsFucked.message
+		isDisrupted: feed.isShitFucked.shitIsFucked,
+		message: feed.isShitFucked.message
 	});
 }
 
