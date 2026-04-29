@@ -63,20 +63,11 @@ function getCourseCampuses(course: AcademicCourse) {
 function sortCampusNames(leftCampus: string, rightCampus: string) {
 	const leftIndex = campusSortOrder.indexOf(leftCampus as (typeof campusSortOrder)[number]);
 	const rightIndex = campusSortOrder.indexOf(rightCampus as (typeof campusSortOrder)[number]);
+	const fallbackIndex = campusSortOrder.length;
+	const leftOrder = leftIndex === -1 ? fallbackIndex : leftIndex;
+	const rightOrder = rightIndex === -1 ? fallbackIndex : rightIndex;
 
-	if (leftIndex === -1 && rightIndex === -1) {
-		return stringCollator.compare(leftCampus, rightCampus);
-	}
-
-	if (leftIndex === -1) {
-		return 1;
-	}
-
-	if (rightIndex === -1) {
-		return -1;
-	}
-
-	return leftIndex - rightIndex;
+	return leftOrder === rightOrder ? stringCollator.compare(leftCampus, rightCampus) : leftOrder - rightOrder;
 }
 
 function formatCampusName(campus: string) {

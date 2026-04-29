@@ -58,20 +58,16 @@ function openAcademicCatalogCacheDatabase(): Promise<IDBDatabase> {
 		request.onupgradeneeded = () => {
 			const database = request.result;
 
-			if (database.objectStoreNames.contains(academicCatalogCacheStoreName)) {
+			if (database.objectStoreNames.contains(academicCatalogCacheStoreName))
 				database.deleteObjectStore(academicCatalogCacheStoreName);
-			}
 
 			database.createObjectStore(academicCatalogCacheStoreName, { keyPath: "id" });
 		};
 
-		request.onsuccess = () => {
-			resolve(request.result);
-		};
+		request.onsuccess = () => resolve(request.result);
 
-		request.onerror = () => {
+		request.onerror = () =>
 			reject(request.error ?? new Error("Failed to open the academic catalog cache database."));
-		};
 	});
 }
 
@@ -88,9 +84,8 @@ async function readAcademicCatalogCacheRecord(recordId: string): Promise<Academi
 			record = (request.result as AcademicCatalogCacheRecord | undefined) ?? null;
 		};
 
-		request.onerror = () => {
+		request.onerror = () =>
 			reject(request.error ?? new Error("Failed to read from the academic catalog cache database."));
-		};
 
 		transaction.oncomplete = () => {
 			database.close();
@@ -272,9 +267,9 @@ export async function loadAcademicCatalog(
 		return existingRequest;
 	}
 
-	const request = loadAcademicCatalogInternal(normalizedCatalogKey).finally(() => {
-		inFlightAcademicCatalogLoads.delete(requestKey);
-	});
+	const request = loadAcademicCatalogInternal(normalizedCatalogKey).finally(() =>
+		inFlightAcademicCatalogLoads.delete(requestKey)
+	);
 
 	inFlightAcademicCatalogLoads.set(requestKey, request);
 

@@ -25,9 +25,7 @@ function getAcademicCalendarSearchText(event: AcademicCalendarEvent) {
 }
 
 function matchesSearchQuery(event: AcademicCalendarEvent, normalizedSearchTokens: readonly string[]) {
-	if (normalizedSearchTokens.length === 0) {
-		return true;
-	}
+	if (normalizedSearchTokens.length === 0) return true;
 
 	const searchText = getAcademicCalendarSearchText(event);
 

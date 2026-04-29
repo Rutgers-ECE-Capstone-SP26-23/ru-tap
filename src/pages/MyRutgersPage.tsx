@@ -27,22 +27,17 @@ export default function MyRutgersPage() {
 			? "myrutgers-widget-shell"
 			: "myrutgers-widget-shell closing";
 
-	useEffect(() => {
-		void prefetchAcademicCatalog();
-	}, []);
+	useEffect(() => void prefetchAcademicCatalog(), []);
 
-	useEffect(() => {
-		return () => {
-			if (closeTimeoutRef.current !== null) {
-				globalThis.clearTimeout(closeTimeoutRef.current);
-			}
-		};
-	}, []);
+	useEffect(
+		() => () => {
+			if (closeTimeoutRef.current !== null) globalThis.clearTimeout(closeTimeoutRef.current);
+		},
+		[]
+	);
 
 	const clearCloseTimeout = () => {
-		if (closeTimeoutRef.current === null) {
-			return;
-		}
+		if (closeTimeoutRef.current === null) return;
 
 		globalThis.clearTimeout(closeTimeoutRef.current);
 		closeTimeoutRef.current = null;

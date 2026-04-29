@@ -30,11 +30,7 @@ export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps)
 			widgetPanel.style.setProperty("--widget-panel-min-height", `${viewportAlignedMinHeight}px`);
 		};
 
-		const scheduleMinHeightUpdate = () => {
-			globalThis.requestAnimationFrame(() => {
-				updateViewportAlignedMinHeight();
-			});
-		};
+		const scheduleMinHeightUpdate = () => globalThis.requestAnimationFrame(updateViewportAlignedMinHeight);
 
 		scheduleMinHeightUpdate();
 		globalThis.addEventListener("resize", scheduleMinHeightUpdate);
