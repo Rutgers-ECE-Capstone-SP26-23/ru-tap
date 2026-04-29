@@ -1,8 +1,21 @@
 import { inferTransitCampus } from "@/data/transit.ts";
 import type TransitBoardViewState from "@/types/transit/pages/transitBoardViewState.ts";
 import type TransitBoardViewStateParams from "@/types/transit/pages/transitBoardViewStateParams.ts";
+import type TransitCampus from "@/types/transit/models/transitCampus.ts";
 import type TransitRoute from "@/types/transit/models/transitRoute.ts";
 import type TransitStop from "@/types/transit/models/transitStop.ts";
+
+type ActiveRouteDisplayMode = "collapsed" | "expanded";
+type ActiveRoutePeekParams = Readonly<{
+	hideSuggestedActiveRoutes: boolean;
+	isAutoCollapsingActiveRoutes: boolean;
+	isMobileDevice: boolean;
+	isResolvingLocation: boolean;
+	locationState: TransitBoardViewStateParams["locationState"];
+	peekRouteCount: number;
+	selectedRouteId: string | null;
+	showAllActiveRoutes: boolean;
+}>;
 
 function getDistanceBetweenPoints(
 	startLatitude: number,
@@ -67,8 +80,12 @@ function getRouteCountLabel(routeCount: number) {
 	return `${routeCount} route${routeCount === 1 ? "" : "s"}`;
 }
 
-function getActiveRouteMetaLabel(totalRouteCount: number, visibleRouteCount: number, isExpanded: boolean) {
-	return isExpanded || visibleRouteCount === 0 || visibleRouteCount === totalRouteCount
+function getActiveRouteMetaLabel(
+	totalRouteCount: number,
+	visibleRouteCount: number,
+	displayMode: ActiveRouteDisplayMode
+) {
+	return displayMode === "expanded" || visibleRouteCount === 0 || visibleRouteCount === totalRouteCount
 		? getRouteCountLabel(totalRouteCount)
 		: `${visibleRouteCount} shown · ${getRouteCountLabel(totalRouteCount)}`;
 }
@@ -97,6 +114,146 @@ function getBoardShellClassName(isWideDesktop: boolean, hasSelectedRoute: boolea
 	return isClosingRoutePanel ? "transit-board-shell mobile closing" : "transit-board-shell mobile";
 }
 
+function getRouteIdsForStop(routes: readonly TransitRoute[], stop: TransitStop | null) {
+	const routeIds = new Set<string>();
+	if (!stop) return routeIds;
+
+	for (const route of routes) if (route.stops.some(routeStop => routeStop.id === stop.id)) routeIds.add(route.id);
+
+	return routeIds;
+}
+
+function getRouteIdsForCampus(routes: readonly TransitRoute[], campus: TransitCampus | null) {
+	const routeIds = new Set<string>();
+	if (!campus) return routeIds;
+
+	for (const route of routes) if (route.campuses.includes(campus)) routeIds.add(route.id);
+
+	return routeIds;
+}
+
+function getCollapsedActiveRouteIds(
+	displayedRoute: TransitRoute | null,
+	activeRouteIds: ReadonlySet<string>,
+	contextualRouteIds: ReadonlySet<string>,
+	isMobileDevice: boolean,
+	selectedRouteId: string | null,
+	hideSuggestedActiveRoutes: boolean
+) {
+	const collapsedActiveRouteIds = new Set<string>();
+
+	if (displayedRoute && activeRouteIds.has(displayedRoute.id)) collapsedActiveRouteIds.add(displayedRoute.id);
+
+	if (isMobileDevice && !selectedRouteId && !hideSuggestedActiveRoutes)
+		for (const routeId of contextualRouteIds) collapsedActiveRouteIds.add(routeId);
+
+	return collapsedActiveRouteIds;
+}
+
+function getContextualRouteIds(
+	locationState: TransitBoardViewStateParams["locationState"],
+	nearestStopRouteIds: ReadonlySet<string>,
+	campusRouteIds: ReadonlySet<string>
+) {
+	return locationState?.precision === "fine" && nearestStopRouteIds.size > 0 ? nearestStopRouteIds : campusRouteIds;
+}
+
+function getNearestStopForLocation(
+	routes: readonly TransitRoute[],
+	locationState: TransitBoardViewStateParams["locationState"]
+) {
+	if (locationState?.precision !== "fine") return null;
+	return getNearestTransitStop(routes, locationState.latitude, locationState.longitude);
+}
+
+function getOrderedActiveRoutes(
+	activeRoutes: readonly TransitRoute[],
+	nearestStopRouteIds: ReadonlySet<string>,
+	isMobileDevice: boolean,
+	selectedRouteId: string | null
+) {
+	if (isMobileDevice && !selectedRouteId && nearestStopRouteIds.size > 0)
+		return getPrioritizedRoutes(activeRoutes, nearestStopRouteIds);
+
+	return activeRoutes;
+}
+
+function getVisibleActiveRoutes(
+	orderedActiveRoutes: readonly TransitRoute[],
+	collapsedActiveRouteIds: ReadonlySet<string>,
+	showAllActiveRoutes: boolean
+) {
+	if (showAllActiveRoutes) return orderedActiveRoutes;
+	return orderedActiveRoutes.filter(route => collapsedActiveRouteIds.has(route.id));
+}
+
+function getPinnedDisplayedRoute(displayedRoute: TransitRoute | null, visibleActiveRoutes: readonly TransitRoute[]) {
+	return displayedRoute && !visibleActiveRoutes.some(route => route.id === displayedRoute.id) ? displayedRoute : null;
+}
+
+function getRouteButtons(pinnedDisplayedRoute: TransitRoute | null, routes: readonly TransitRoute[]) {
+	if (!pinnedDisplayedRoute) return routes;
+	return [pinnedDisplayedRoute, ...routes];
+}
+
+function getActiveRouteDisplayMode(showAllActiveRoutes: boolean): ActiveRouteDisplayMode {
+	return showAllActiveRoutes ? "expanded" : "collapsed";
+}
+
+function getHasCollapsedActiveRoutePeek({
+	isAutoCollapsingActiveRoutes,
+	showAllActiveRoutes,
+	hideSuggestedActiveRoutes,
+	peekRouteCount
+}: Pick<
+	ActiveRoutePeekParams,
+	"isAutoCollapsingActiveRoutes" | "showAllActiveRoutes" | "hideSuggestedActiveRoutes" | "peekRouteCount"
+>) {
+	return !isAutoCollapsingActiveRoutes && !showAllActiveRoutes && !hideSuggestedActiveRoutes && peekRouteCount > 0;
+}
+
+function shouldShowLocatingActiveRoutePeekNote({
+	isMobileDevice,
+	selectedRouteId,
+	isAutoCollapsingActiveRoutes,
+	showAllActiveRoutes,
+	hideSuggestedActiveRoutes,
+	isResolvingLocation,
+	peekRouteCount
+}: ActiveRoutePeekParams) {
+	return (
+		isMobileDevice &&
+		!selectedRouteId &&
+		!isAutoCollapsingActiveRoutes &&
+		!showAllActiveRoutes &&
+		!hideSuggestedActiveRoutes &&
+		isResolvingLocation &&
+		peekRouteCount === 0
+	);
+}
+
+function shouldShowLocationUnavailableActiveRoutePeekNote({
+	isMobileDevice,
+	selectedRouteId,
+	isAutoCollapsingActiveRoutes,
+	showAllActiveRoutes,
+	hideSuggestedActiveRoutes,
+	isResolvingLocation,
+	locationState,
+	peekRouteCount
+}: ActiveRoutePeekParams) {
+	return (
+		isMobileDevice &&
+		!selectedRouteId &&
+		!isAutoCollapsingActiveRoutes &&
+		!showAllActiveRoutes &&
+		!hideSuggestedActiveRoutes &&
+		!isResolvingLocation &&
+		locationState === null &&
+		peekRouteCount === 0
+	);
+}
+
 export default function getTransitBoardViewState({
 	snapshot,
 	selectedRouteId,
@@ -116,70 +273,50 @@ export default function getTransitBoardViewState({
 	const displayedRouteId = selectedRouteId ?? closingRouteId;
 	const displayedRoute = routes.find(route => route.id === displayedRouteId) ?? null;
 	const userCampus = locationState ? inferTransitCampus(locationState.latitude, locationState.longitude) : null;
-	const nearestStop =
-		locationState?.precision === "fine"
-			? getNearestTransitStop(routes, locationState.latitude, locationState.longitude)
-			: null;
-	const nearestStopRouteIds = new Set<string>();
-	const campusRouteIds = new Set<string>();
+	const nearestStop = getNearestStopForLocation(routes, locationState);
+	const nearestStopRouteIds = getRouteIdsForStop(activeRoutes, nearestStop);
+	const campusRouteIds = getRouteIdsForCampus(activeRoutes, userCampus);
+	const contextualRouteIds = getContextualRouteIds(locationState, nearestStopRouteIds, campusRouteIds);
 
-	if (nearestStop)
-		for (const route of activeRoutes)
-			if (route.stops.some(stop => stop.id === nearestStop.id)) nearestStopRouteIds.add(route.id);
-
-	if (userCampus)
-		for (const route of activeRoutes) if (route.campuses.includes(userCampus)) campusRouteIds.add(route.id);
-
-	const orderedActiveRoutes =
-		isMobileDevice && !selectedRouteId && nearestStopRouteIds.size > 0
-			? getPrioritizedRoutes(activeRoutes, nearestStopRouteIds)
-			: activeRoutes;
-	const collapsedActiveRouteIds = new Set<string>();
+	const orderedActiveRoutes = getOrderedActiveRoutes(
+		activeRoutes,
+		nearestStopRouteIds,
+		isMobileDevice,
+		selectedRouteId
+	);
 	const activeRouteIds = new Set(activeRoutes.map(route => route.id));
+	const collapsedActiveRouteIds = getCollapsedActiveRouteIds(
+		displayedRoute,
+		activeRouteIds,
+		contextualRouteIds,
+		isMobileDevice,
+		selectedRouteId,
+		hideSuggestedActiveRoutes
+	);
 
-	if (displayedRoute && activeRouteIds.has(displayedRoute.id)) collapsedActiveRouteIds.add(displayedRoute.id);
-
-	if (isMobileDevice && !selectedRouteId && !hideSuggestedActiveRoutes) {
-		const contextualRouteIds =
-			locationState?.precision === "fine" && nearestStopRouteIds.size > 0 ? nearestStopRouteIds : campusRouteIds;
-
-		for (const routeId of contextualRouteIds) collapsedActiveRouteIds.add(routeId);
-	}
-
-	const visibleActiveRoutes = showAllActiveRoutes
-		? orderedActiveRoutes
-		: orderedActiveRoutes.filter(route => collapsedActiveRouteIds.has(route.id));
-	const pinnedDisplayedRoute =
-		displayedRoute && !visibleActiveRoutes.some(route => route.id === displayedRoute.id) ? displayedRoute : null;
-	const peekRouteButtons = pinnedDisplayedRoute
-		? [pinnedDisplayedRoute, ...visibleActiveRoutes]
-		: visibleActiveRoutes;
-	const expandedRouteButtons = pinnedDisplayedRoute
-		? [pinnedDisplayedRoute, ...orderedActiveRoutes]
-		: orderedActiveRoutes;
+	const visibleActiveRoutes = getVisibleActiveRoutes(
+		orderedActiveRoutes,
+		collapsedActiveRouteIds,
+		showAllActiveRoutes
+	);
+	const pinnedDisplayedRoute = getPinnedDisplayedRoute(displayedRoute, visibleActiveRoutes);
+	const peekRouteButtons = getRouteButtons(pinnedDisplayedRoute, visibleActiveRoutes);
+	const expandedRouteButtons = getRouteButtons(pinnedDisplayedRoute, orderedActiveRoutes);
 	const activeRoutesHaveVisibleContent = showAllActiveRoutes;
-	const hasCollapsedActiveRoutePeek =
-		!isAutoCollapsingActiveRoutes &&
-		!showAllActiveRoutes &&
-		!hideSuggestedActiveRoutes &&
-		peekRouteButtons.length > 0;
-	const showLocatingActiveRoutePeekNote =
-		isMobileDevice &&
-		!selectedRouteId &&
-		!isAutoCollapsingActiveRoutes &&
-		!showAllActiveRoutes &&
-		!hideSuggestedActiveRoutes &&
-		isResolvingLocation &&
-		peekRouteButtons.length === 0;
+	const activeRoutePeekParams = {
+		hideSuggestedActiveRoutes,
+		isAutoCollapsingActiveRoutes,
+		isMobileDevice,
+		isResolvingLocation,
+		locationState,
+		peekRouteCount: peekRouteButtons.length,
+		selectedRouteId,
+		showAllActiveRoutes
+	} as const;
+	const hasCollapsedActiveRoutePeek = getHasCollapsedActiveRoutePeek(activeRoutePeekParams);
+	const showLocatingActiveRoutePeekNote = shouldShowLocatingActiveRoutePeekNote(activeRoutePeekParams);
 	const showLocationUnavailableActiveRoutePeekNote =
-		isMobileDevice &&
-		!selectedRouteId &&
-		!isAutoCollapsingActiveRoutes &&
-		!showAllActiveRoutes &&
-		!hideSuggestedActiveRoutes &&
-		!isResolvingLocation &&
-		locationState === null &&
-		peekRouteButtons.length === 0;
+		shouldShowLocationUnavailableActiveRoutePeekNote(activeRoutePeekParams);
 	const hasSelectedRoute = selectedRoute !== null;
 	const isClosingRoutePanel = !hasSelectedRoute && closingRouteId !== null;
 
@@ -201,7 +338,7 @@ export default function getTransitBoardViewState({
 		activeRouteMetaLabel: getActiveRouteMetaLabel(
 			activeRoutes.length,
 			peekRouteButtons.length,
-			showAllActiveRoutes
+			getActiveRouteDisplayMode(showAllActiveRoutes)
 		),
 		layoutClassName: getLayoutClassName(isWideDesktop, hasSelectedRoute),
 		boardShellClassName: getBoardShellClassName(isWideDesktop, hasSelectedRoute, isClosingRoutePanel)

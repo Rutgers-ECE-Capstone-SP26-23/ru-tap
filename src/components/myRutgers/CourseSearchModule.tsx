@@ -18,6 +18,14 @@ type CourseCatalogIndex = Readonly<{
 	allCourses: readonly IndexedCourse[];
 }>;
 
+type CourseSearchResultsParams = Readonly<{
+	activeCourse: IndexedCourse | null;
+	hasQuery: boolean;
+	matchedCourses: readonly IndexedCourse[];
+	matchedSectionCount: number;
+	onClearSearch: () => void;
+}>;
+
 const campusSortOrder = [
 	"College Ave",
 	"Busch",
@@ -60,14 +68,14 @@ function getCourseCampuses(course: AcademicCourse) {
 	return getUniqueStrings(course.sections.flatMap(section => section.meetings.map(meeting => meeting.campus)));
 }
 
-function sortCampusNames(leftCampus: string, rightCampus: string) {
-	const leftIndex = campusSortOrder.indexOf(leftCampus as (typeof campusSortOrder)[number]);
-	const rightIndex = campusSortOrder.indexOf(rightCampus as (typeof campusSortOrder)[number]);
+function sortCampusNames(firstCampus: string, secondCampus: string) {
+	const firstIndex = campusSortOrder.indexOf(firstCampus as (typeof campusSortOrder)[number]);
+	const secondIndex = campusSortOrder.indexOf(secondCampus as (typeof campusSortOrder)[number]);
 	const fallbackIndex = campusSortOrder.length;
-	const leftOrder = leftIndex === -1 ? fallbackIndex : leftIndex;
-	const rightOrder = rightIndex === -1 ? fallbackIndex : rightIndex;
+	const firstOrder = firstIndex === -1 ? fallbackIndex : firstIndex;
+	const secondOrder = secondIndex === -1 ? fallbackIndex : secondIndex;
 
-	return leftOrder === rightOrder ? stringCollator.compare(leftCampus, rightCampus) : leftOrder - rightOrder;
+	return firstOrder === secondOrder ? stringCollator.compare(firstCampus, secondCampus) : firstOrder - secondOrder;
 }
 
 function formatCampusName(campus: string) {
@@ -246,6 +254,158 @@ function sortCourses(leftCourse: IndexedCourse, rightCourse: IndexedCourse) {
 		: codeComparison;
 }
 
+function getCourseResultCountLabel(hasQuery: boolean, matchedCourseCount: number) {
+	if (!hasQuery) return "courses indexed";
+	return matchedCourseCount === 1 ? "match" : "matches";
+}
+
+function getCourseResultMetaLine(matchedCourseCount: number) {
+	if (matchedCourseCount === 1) return "1 course matched your search.";
+	return `Showing the first of ${matchedCourseCount} matching courses. Refine the query to narrow the result.`;
+}
+
+function getSectionInstructorLabel(instructorCount: number) {
+	if (instructorCount === 0) return "Instructor TBA";
+	if (instructorCount === 1) return "1 instructor";
+	return `${instructorCount} instructors`;
+}
+
+function renderCourseSectionNotes(section: AcademicCourse["sections"][number]) {
+	return (
+		<>
+			{section.crossListings?.length ? (
+				<p className="course-search-section-note">
+					Cross-listed as{" "}
+					{section.crossListings
+						.map(
+							crossListing =>
+								`${crossListing.dept}:${crossListing.number}:${crossListing.section} (${crossListing.index})`
+						)
+						.join(" · ")}
+				</p>
+			) : null}
+			{section.openTo ? (
+				<p className="course-search-section-note">
+					<strong>Open to:</strong> {section.openTo}
+				</p>
+			) : null}
+			{section.eligibility ? (
+				<p className="course-search-section-note">
+					<strong>Eligibility:</strong> {section.eligibility}
+				</p>
+			) : null}
+			{section.notes ? (
+				<p className="course-search-section-note">
+					<strong>Notes:</strong> {section.notes}
+				</p>
+			) : null}
+			{section.comments ? (
+				<p className="course-search-section-note">
+					<strong>Comments:</strong> {section.comments}
+				</p>
+			) : null}
+		</>
+	);
+}
+
+function renderCourseSection(activeCourse: IndexedCourse, section: AcademicCourse["sections"][number]) {
+	return (
+		<article key={`${activeCourse.code}-${section.index}`} className="course-search-section-card">
+			<div className="course-search-section-head">
+				<div>
+					<p className="course-search-section-eyebrow">Section {section.id}</p>
+					<h5>Index {section.index}</h5>
+				</div>
+				<span className="course-search-section-chip">
+					{getSectionInstructorLabel(section.professors.length)}
+				</span>
+			</div>
+
+			{section.professors.length > 0 ? (
+				<p className="course-search-section-professors">{section.professors.join(" · ")}</p>
+			) : null}
+
+			<div className="course-search-meeting-list">
+				{section.meetings.map((meeting, index) => (
+					<div
+						key={`${section.index}-${meeting.day}-${meeting.start}-${meeting.room}-${index}`}
+						className="course-search-meeting-row">
+						<div>
+							<p className="course-search-meeting-window">{formatMeetingWindow(meeting)}</p>
+							<p className="course-search-meeting-location">{formatMeetingLocation(meeting)}</p>
+						</div>
+						<span className="course-search-meeting-mode">
+							{meeting.mode.trim() === "" ? "Mode TBA" : meeting.mode}
+						</span>
+					</div>
+				))}
+			</div>
+
+			{renderCourseSectionNotes(section)}
+		</article>
+	);
+}
+
+function renderCourseSearchResults({
+	activeCourse,
+	hasQuery,
+	matchedCourses,
+	matchedSectionCount,
+	onClearSearch
+}: CourseSearchResultsParams) {
+	if (!hasQuery)
+		return (
+			<div className="course-search-empty-state">
+				<h3>Start with a search.</h3>
+				<p>Search by course code, title, instructor, or location to pull up the course details you need.</p>
+			</div>
+		);
+
+	if (!activeCourse)
+		return (
+			<div className="course-search-empty-state">
+				<h3>No matches yet.</h3>
+				<p>Refine the query to surface a course information panel from the catalog snapshot.</p>
+				<button type="button" className="course-search-clear-button" onClick={onClearSearch}>
+					Clear search
+				</button>
+			</div>
+		);
+
+	return (
+		<div className="course-search-results-stack">
+			<section className="course-search-detail-card">
+				<p className="course-search-section-eyebrow">Search results</p>
+				<h4>{activeCourse.course.name}</h4>
+				<p className="course-search-details-code">{activeCourse.code}</p>
+				<p className="course-search-result-meta-line">{getCourseResultMetaLine(matchedCourses.length)}</p>
+				<ul className="course-search-stat-list">
+					<li>{activeCourse.summaryLine}</li>
+					<li>School code {activeCourse.course.school}</li>
+					<li>Department code {activeCourse.course.dept}</li>
+					<li>Course number {activeCourse.course.number}</li>
+					<li>{formatCampusSummary(activeCourse.campuses)}</li>
+					<li>{matchedSectionCount} sections across the current search results</li>
+				</ul>
+			</section>
+
+			{activeCourse.course.prereqs ? (
+				<section className="course-search-detail-card">
+					<h4>Prerequisites</h4>
+					<p>{activeCourse.course.prereqs}</p>
+				</section>
+			) : null}
+
+			<section className="course-search-detail-card">
+				<h4>Sections</h4>
+				<div className="course-search-section-list">
+					{activeCourse.course.sections.map(section => renderCourseSection(activeCourse, section))}
+				</div>
+			</section>
+		</div>
+	);
+}
+
 export default function CourseSearchModule() {
 	const [catalogIndex, setCatalogIndex] = useState<CourseCatalogIndex>({
 		allCourses: []
@@ -268,6 +428,8 @@ export default function CourseSearchModule() {
 		(totalSections, indexedCourse) => totalSections + indexedCourse.sectionCount,
 		0
 	);
+	const resultCount = hasQuery ? matchedCourses.length : catalogIndex.allCourses.length;
+	const resultCountLabel = getCourseResultCountLabel(hasQuery, matchedCourses.length);
 
 	useEffect(() => {
 		let isCancelled = false;
@@ -343,10 +505,8 @@ export default function CourseSearchModule() {
 						</p>
 					</div>
 					<div className="course-search-results-meta" aria-live="polite">
-						<strong>{hasQuery ? matchedCourses.length : catalogIndex.allCourses.length}</strong>
-						<span>
-							{hasQuery ? (matchedCourses.length === 1 ? "match" : "matches") : "courses indexed"}
-						</span>
+						<strong>{resultCount}</strong>
+						<span>{resultCountLabel}</span>
 					</div>
 				</div>
 
@@ -364,141 +524,13 @@ export default function CourseSearchModule() {
 					/>
 				</div>
 
-				{hasQuery ? (
-					activeCourse ? (
-						<div className="course-search-results-stack">
-							<section className="course-search-detail-card">
-								<p className="course-search-section-eyebrow">Search results</p>
-								<h4>{activeCourse.course.name}</h4>
-								<p className="course-search-details-code">{activeCourse.code}</p>
-								<p className="course-search-result-meta-line">
-									{matchedCourses.length === 1
-										? "1 course matched your search."
-										: `Showing the first of ${matchedCourses.length} matching courses. Refine the query to narrow the result.`}
-								</p>
-								<ul className="course-search-stat-list">
-									<li>{activeCourse.summaryLine}</li>
-									<li>School code {activeCourse.course.school}</li>
-									<li>Department code {activeCourse.course.dept}</li>
-									<li>Course number {activeCourse.course.number}</li>
-									<li>{formatCampusSummary(activeCourse.campuses)}</li>
-									<li>{matchedSectionCount} sections across the current search results</li>
-								</ul>
-							</section>
-
-							{activeCourse.course.prereqs ? (
-								<section className="course-search-detail-card">
-									<h4>Prerequisites</h4>
-									<p>{activeCourse.course.prereqs}</p>
-								</section>
-							) : null}
-
-							<section className="course-search-detail-card">
-								<h4>Sections</h4>
-								<div className="course-search-section-list">
-									{activeCourse.course.sections.map(section => (
-										<article
-											key={`${activeCourse.code}-${section.index}`}
-											className="course-search-section-card">
-											<div className="course-search-section-head">
-												<div>
-													<p className="course-search-section-eyebrow">
-														Section {section.id}
-													</p>
-													<h5>Index {section.index}</h5>
-												</div>
-												<span className="course-search-section-chip">
-													{section.professors.length === 0
-														? "Instructor TBA"
-														: section.professors.length === 1
-															? "1 instructor"
-															: `${section.professors.length} instructors`}
-												</span>
-											</div>
-
-											{section.professors.length > 0 ? (
-												<p className="course-search-section-professors">
-													{section.professors.join(" · ")}
-												</p>
-											) : null}
-
-											<div className="course-search-meeting-list">
-												{section.meetings.map((meeting, index) => (
-													<div
-														key={`${section.index}-${meeting.day}-${meeting.start}-${meeting.room}-${index}`}
-														className="course-search-meeting-row">
-														<div>
-															<p className="course-search-meeting-window">
-																{formatMeetingWindow(meeting)}
-															</p>
-															<p className="course-search-meeting-location">
-																{formatMeetingLocation(meeting)}
-															</p>
-														</div>
-														<span className="course-search-meeting-mode">
-															{meeting.mode.trim() === "" ? "Mode TBA" : meeting.mode}
-														</span>
-													</div>
-												))}
-											</div>
-
-											{section.crossListings?.length ? (
-												<p className="course-search-section-note">
-													Cross-listed as{" "}
-													{section.crossListings
-														.map(
-															crossListing =>
-																`${crossListing.dept}:${crossListing.number}:${crossListing.section} (${crossListing.index})`
-														)
-														.join(" · ")}
-												</p>
-											) : null}
-											{section.openTo ? (
-												<p className="course-search-section-note">
-													<strong>Open to:</strong> {section.openTo}
-												</p>
-											) : null}
-											{section.eligibility ? (
-												<p className="course-search-section-note">
-													<strong>Eligibility:</strong> {section.eligibility}
-												</p>
-											) : null}
-											{section.notes ? (
-												<p className="course-search-section-note">
-													<strong>Notes:</strong> {section.notes}
-												</p>
-											) : null}
-											{section.comments ? (
-												<p className="course-search-section-note">
-													<strong>Comments:</strong> {section.comments}
-												</p>
-											) : null}
-										</article>
-									))}
-								</div>
-							</section>
-						</div>
-					) : (
-						<div className="course-search-empty-state">
-							<h3>No matches yet.</h3>
-							<p>Refine the query to surface a course information panel from the catalog snapshot.</p>
-							<button
-								type="button"
-								className="course-search-clear-button"
-								onClick={() => setSearchQuery("")}>
-								Clear search
-							</button>
-						</div>
-					)
-				) : (
-					<div className="course-search-empty-state">
-						<h3>Start with a search.</h3>
-						<p>
-							Search by course code, title, instructor, or location to pull up the course details you
-							need.
-						</p>
-					</div>
-				)}
+				{renderCourseSearchResults({
+					activeCourse,
+					hasQuery,
+					matchedCourses,
+					matchedSectionCount,
+					onClearSearch: () => setSearchQuery("")
+				})}
 			</section>
 		</div>
 	);

@@ -10,6 +10,15 @@ import "@/styles/pages/myRutgersPage.css";
 
 const TOOL_PANEL_TRANSITION_MS = 420;
 
+function getWidgetShellClassName(
+	hasSelectedService: boolean,
+	renderedService: (typeof myRutgersServices)[number] | null
+) {
+	if (hasSelectedService) return "myrutgers-widget-shell visible";
+	if (renderedService === null) return "myrutgers-widget-shell";
+	return "myrutgers-widget-shell closing";
+}
+
 export default function MyRutgersPage() {
 	const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 	const selectedService = myRutgersServices.find(service => service.id === selectedServiceId) ?? null;
@@ -21,11 +30,7 @@ export default function MyRutgersPage() {
 	const serviceGridPanelClassName = hasSelectedService
 		? "service-grid-panel service-grid-panel-vertical"
 		: "service-grid-panel service-grid-panel-horizontal";
-	const widgetShellClassName = hasSelectedService
-		? "myrutgers-widget-shell visible"
-		: renderedService === null
-			? "myrutgers-widget-shell"
-			: "myrutgers-widget-shell closing";
+	const widgetShellClassName = getWidgetShellClassName(hasSelectedService, renderedService);
 
 	useEffect(() => void prefetchAcademicCatalog(), []);
 

@@ -2,7 +2,26 @@ import AcademicCalendarModule from "@/components/myRutgers/AcademicCalendarModul
 import CourseSearchModule from "@/components/myRutgers/CourseSearchModule.tsx";
 import "@/styles/components/ServiceWidgetPanel.css";
 import type ServiceWidgetPanelProps from "@/types/components/props/serviceWidgetPanelProps.ts";
+import type MyRutgersService from "@/types/myRutgers/models/myRutgersService.ts";
 import { useLayoutEffect, useRef } from "react";
+
+function renderServiceWidgetBody(service: MyRutgersService) {
+	if (service.embedMode === "iframe")
+		return (
+			<iframe
+				className="service-frame"
+				title={`${service.title} Rutgers surface`}
+				src={service.embedUrl}
+				loading="lazy"
+				referrerPolicy="no-referrer"
+				sandbox="allow-forms allow-modals allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
+			/>
+		);
+
+	if (service.module === "course-search") return <CourseSearchModule />;
+
+	return <AcademicCalendarModule />;
+}
 
 export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps) {
 	const widgetPanelRef = useRef<HTMLElement | null>(null);
@@ -75,22 +94,7 @@ export default function ServiceWidgetPanel({ service }: ServiceWidgetPanelProps)
 				) : null}
 			</header>
 
-			<div className={widgetPanelBodyClassName}>
-				{service.embedMode === "iframe" ? (
-					<iframe
-						className="service-frame"
-						title={`${service.title} Rutgers surface`}
-						src={service.embedUrl}
-						loading="lazy"
-						referrerPolicy="no-referrer"
-						sandbox="allow-forms allow-modals allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
-					/>
-				) : service.module === "course-search" ? (
-					<CourseSearchModule />
-				) : (
-					<AcademicCalendarModule />
-				)}
-			</div>
+			<div className={widgetPanelBodyClassName}>{renderServiceWidgetBody(service)}</div>
 		</section>
 	);
 }

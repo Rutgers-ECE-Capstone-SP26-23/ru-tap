@@ -56,8 +56,13 @@ function parseArgs(argv) {
 		year: DEFAULT_YEAR
 	};
 
-	for (let index = 0; index < argv.length; index += 1) {
-		const argument = argv[index];
+	let shouldSkipArgument = false;
+
+	for (const [index, argument] of argv.entries()) {
+		if (shouldSkipArgument) {
+			shouldSkipArgument = false;
+			continue;
+		}
 
 		if (argument === "--help" || argument === "-h") {
 			options.help = true;
@@ -80,8 +85,7 @@ function parseArgs(argv) {
 
 		const flag = argument.includes("=") ? argument.slice(0, argument.indexOf("=")) : argument;
 		const option = readOptionValue(argument, argv, index);
-
-		index = option.nextIndex;
+		shouldSkipArgument = option.nextIndex > index;
 
 		switch (flag) {
 			case "--campus":

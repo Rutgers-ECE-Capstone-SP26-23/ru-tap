@@ -117,8 +117,7 @@ export default function AcademicCalendarModule() {
 							<tbody>
 								{visibleEvents.map((event, index) => {
 									const previousEvent = visibleEvents[index - 1];
-									const startsSection =
-										previousEvent === undefined || previousEvent.section !== event.section;
+									const startsSection = previousEvent?.section !== event.section;
 
 									return (
 										<tr
