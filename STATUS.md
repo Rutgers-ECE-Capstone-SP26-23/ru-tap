@@ -61,6 +61,7 @@ Last updated: 2026-04-27T18:42:14-04:00
     - `src/pages/MyRutgersPage.tsx`
     - `src/pages/RoomsPage.tsx`
     - `src/pages/TransitPage.tsx`
+- Unknown normalized paths now throw a 404 response instead of falling back to the landing page.
 - `Suspense` still uses `fallback={null}`, so route chunk loading still has a blank interim state.
 - `vite.config.ts` builds both:
     - the main app entry from `index.html`

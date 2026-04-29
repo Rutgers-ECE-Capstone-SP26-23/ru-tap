@@ -8,17 +8,19 @@ const TransitPage = lazy(() => import("@/pages/TransitPage.tsx"));
 
 function App() {
 	const normalizedPath = normalizeAppPath(globalThis.location.pathname);
-	let Page = LandingPage;
+	const page = (() => {
+		if (normalizedPath === "/") return <LandingPage />;
+		if (normalizedPath === "/myrutgers") return <MyRutgersPage />;
+		if (normalizedPath === "/rooms") return <RoomsPage />;
+		if (normalizedPath === "/transit") return <TransitPage />;
 
-	if (normalizedPath === "/myrutgers") Page = MyRutgersPage;
-	else if (normalizedPath === "/rooms") Page = RoomsPage;
-	else if (normalizedPath === "/transit") Page = TransitPage;
+		throw new Response("Not found", {
+			status: 404,
+			statusText: `No RU Tap route matches ${normalizedPath}`
+		});
+	})();
 
-	return (
-		<Suspense fallback={null}>
-			<Page />
-		</Suspense>
-	);
+	return <Suspense fallback={null}>{page}</Suspense>;
 }
 
 export default App;
